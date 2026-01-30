@@ -1,0 +1,95 @@
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 220px;
+  height: 100vh;
+
+  background: #b91c1c;
+  color: white;
+  padding: 24px;
+
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.25);
+  z-index: 100;
+}
+
+
+.sidebar-logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 36px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 10px;
+
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+
+
+.sidebar-menu a.active,
+.sidebar-menu a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+   transform: translateX(2px);
+  
+}
+
+.sidebar-menu svg {
+  font-size: 28px;
+}
+
+
+.app-content {
+  margin-left: 220px; /* largura da sidebar */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+
+.header {
+  height: 100px;
+  min-height: 100px;
+
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.page-content {
+  padding: 24px;
+}

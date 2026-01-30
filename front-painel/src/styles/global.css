@@ -1,0 +1,68 @@
+/* =========================
+   FONTES
+========================= */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* =========================
+   VARIÁVEIS DE TEMA
+========================= */
+:root {
+  --primary-red: #d32f2f;
+  --primary-red-hover: #b71c1c;
+
+  --background: #ffffff;
+  --background-light: #f5f5f5;
+
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+
+  --border-color: #e5e7eb;
+}
+
+/* =========================
+   RESET BÁSICO
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* =========================
+   BASE GLOBAL
+========================= */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =========================
+   ELEMENTOS PADRÃO
+========================= */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+a {
+  color: var(--primary-red);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
