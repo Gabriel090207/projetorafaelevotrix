@@ -1,5 +1,14 @@
 from fastapi import FastAPI
+from app.core.firebase import db
+
+
 from app.routers import auth
+from app.routers import clientes
+from app.routers import planos
+from app.routers import cobrancas
+
+
+
 
 app = FastAPI(title="Projeto Evotrix API")
 
@@ -15,7 +24,18 @@ app.add_middleware(
 
 
 app.include_router(auth.router)
+app.include_router(clientes.router)
+app.include_router(planos.router)
+app.include_router(cobrancas.router)
+
+
+
 
 @app.get("/")
 def root():
     return {"status": "API Evotrix rodando"}
+
+@app.get("/firebase-test")
+def firebase_test():
+    db.collection("teste").add({"status": "conectado"})
+    return {"firebase": "ok"}
