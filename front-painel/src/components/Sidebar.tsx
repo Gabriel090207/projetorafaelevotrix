@@ -3,8 +3,13 @@ import {
   FaUsers,
   FaMoneyBillWave,
   FaNetworkWired,
-  FaFileAlt
+  FaFileAlt,
+  FaComments,
+  FaTools,
+  FaCog,
 } from "react-icons/fa";
+
+import { NavLink } from "react-router-dom";
 import "../styles/layout.css";
 
 const Sidebar = () => {
@@ -13,30 +18,45 @@ const Sidebar = () => {
       <h2 className="sidebar-logo">EVX</h2>
 
       <nav className="sidebar-menu">
-        <a className="active">
+        <NavLink to="/dashboard">
           <FaChartPie />
           <span>Dashboard</span>
-        </a>
+        </NavLink>
 
-        <a>
+        <NavLink to="/clientes">
           <FaUsers />
           <span>Clientes</span>
-        </a>
+        </NavLink>
 
-        <a>
+        <NavLink to="/financeiro">
           <FaMoneyBillWave />
           <span>Financeiro</span>
-        </a>
+        </NavLink>
 
-        <a>
+        <NavLink to="/rede">
           <FaNetworkWired />
           <span>Rede</span>
-        </a>
+        </NavLink>
 
-        <a>
+        <NavLink to="/mensagens">
+          <FaComments />
+          <span>Mensagens</span>
+        </NavLink>
+
+        <NavLink to="/ordens-servico">
+          <FaTools />
+          <span>Ordens de Serviço</span>
+        </NavLink>
+
+        <NavLink to="/relatorios">
           <FaFileAlt />
           <span>Relatórios</span>
-        </a>
+        </NavLink>
+
+        <NavLink to="/configuracoes">
+          <FaCog />
+          <span>Configurações</span>
+        </NavLink>
       </nav>
     </aside>
   );

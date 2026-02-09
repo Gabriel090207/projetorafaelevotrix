@@ -39,6 +39,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+outline: none;
+box-shadow: none;
+
+
 
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
@@ -48,6 +53,10 @@
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
+.sidebar-menu a:hover,
+.sidebar-menu a.active {
+  text-decoration: none;
+}
 
 
 .sidebar-menu a.active,
@@ -72,13 +81,20 @@
   min-height: 100vh;
 }
 
+.page-content {
+  padding: 24px;
+}
+
+
+
+/* =========================
+   HEADER
+========================= */
 
 .header {
-  height: 100px;
-  min-height: 100px;
-
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  height: 80px;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
 
   display: flex;
   align-items: center;
@@ -90,6 +106,137 @@
   z-index: 50;
 }
 
-.page-content {
-  padding: 24px;
+.header-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ÍCONES SEM CARD */
+
+.header-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: var(--text-secondary);
+  font-size: 20px;
+
+  position: relative;
+  padding: 6px;
+  border-radius: 8px;
+
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.header-icon:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+/* NOTIFICAÇÃO */
+
+.notification-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+/* PERFIL */
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.header-profile:hover {
+  background: var(--hover);
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background: #b91c1c;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.profile-info strong {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.profile-info span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.header-profile svg {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* =========================
+   THEME VARIABLES
+========================= */
+
+:root {
+  --bg-header: #ffffff;
+  --bg-page: #f9fafb;
+  --border: #e5e7eb;
+
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+
+  --hover: #f3f4f6;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+
+body.dark {
+  --bg-header: #020617;
+  --bg-page: #020617;
+  --border: #1f2933;
+
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+
+  --hover: rgba(255, 255, 255, 0.08);
+}
+
+body.dark .app-content {
+  background: var(--bg-page);
 }

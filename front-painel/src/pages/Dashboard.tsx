@@ -13,13 +13,34 @@ import {
   FaMoneyBillWave,
 } from "react-icons/fa";
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+const messagesChartData = [
+  { date: "29/01", value: 22 },
+  { date: "30/01", value: 233 },
+  { date: "31/01", value: 115 },
+  { date: "01/02", value: 184 },
+  { date: "02/02", value: 134 },
+  { date: "03/02", value: 77 },
+  { date: "04/02", value: 76 },
+  { date: "05/02", value: 1 },
+];
+
 const Dashboard = () => {
   return (
     <div className="dashboard-page">
       <h1>Dashboard</h1>
 
       {/* =======================
-          CARDS SUPERIORES (KPIs)
+          CARDS SUPERIORES
       ======================= */}
       <div className="dashboard-top">
         <DashboardCard
@@ -52,12 +73,10 @@ const Dashboard = () => {
           variant="warning"
           subtitle="Faturas pendentes"
         />
-
-        
       </div>
 
       {/* =======================
-          PAINÉIS INFERIORES
+          PAINÉIS
       ======================= */}
       <div className="dashboard-panels">
         <DashboardPanel
@@ -72,11 +91,7 @@ const Dashboard = () => {
           </ul>
         </DashboardPanel>
 
-        <DashboardPanel
-          title="Rede"
-          icon={<FaNetworkWired />}
-          variant="network"
-        >
+        <DashboardPanel title="Rede" icon={<FaNetworkWired />} variant="network">
           <ul>
             <li>1.102 clientes online</li>
             <li>4 OLTs ativas</li>
@@ -96,62 +111,69 @@ const Dashboard = () => {
           </ul>
         </DashboardPanel>
       </div>
-     
 
-  {/* =======================
-    BOT / WHATSAPP (BLOCO GRANDE)
-======================= */}
-<div className="dashboard-bot-block">
-  {/* CARD SUPERIOR */}
-  <div className="bot-block-card">
-    <div className="bot-block-header">
-      <h3>WhatsApp Bot — Resumo</h3>
+      {/* =======================
+          PAINEL DE MENSAGENS
+      ======================= */}
+      <div className="dashboard-messages-block">
+        <div className="messages-card">
+          <div className="messages-header">
+            <h3>Mensagens — Esta Semana</h3>
 
-      <div className="bot-status online">
-        <span className="dot" />
-        Online
+            <div className="messages-status online">
+              <span className="dot" />
+              Online
+            </div>
+          </div>
+
+          {/* GRÁFICO */}
+          <div style={{ width: "100%", height: 280, marginBottom: 30, marginTop: 40 }}>
+            <ResponsiveContainer>
+              <LineChart data={messagesChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#64748b"
+                  strokeWidth={3}
+                  dot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* RESUMO */}
+          <div className="messages-metrics">
+            <div className="messages-metric success">
+              <strong>827</strong>
+              <span>Enviadas</span>
+            </div>
+
+            <div className="messages-metric">
+              <strong>767</strong>
+              <span>Recebidas</span>
+            </div>
+
+            <div className="messages-metric">
+              <strong>492</strong>
+              <span>Lidas</span>
+            </div>
+
+            <div className="messages-metric warning">
+              <strong>10</strong>
+              <span>Bloqueadas</span>
+            </div>
+
+            <div className="messages-metric danger">
+              <strong>5</strong>
+              <span>Erros</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div className="bot-block-content">
-      <div className="bot-metrics">
-        <div>
-          <strong>379</strong>
-          <span>Enviadas</span>
-        </div>
-        <div>
-          <strong>339</strong>
-          <span>Recebidas</span>
-        </div>
-        <div>
-          <strong>254</strong>
-          <span>Lidas</span>
-        </div>
-        <div>
-          <strong>7</strong>
-          <span>Erros</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* CARD INFERIOR */}
-  <div className="bot-block-card">
-    <div className="bot-block-header">
-      <h3>Detalhes do Bot</h3>
-    </div>
-
-    <ul className="bot-details">
-      <li>Canal: WhatsApp</li>
-      <li>Número conectado: +55 11 99999-9999</li>
-      <li>Última sincronização: há 2 minutos</li>
-      <li>Fila atual: 0 mensagens</li>
-    </ul>
-  </div>
-</div>
-
-     
-
     </div>
   );
 };
