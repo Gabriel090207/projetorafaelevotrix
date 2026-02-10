@@ -5,6 +5,9 @@ from app.core.firebase import db
 router = APIRouter(prefix="/cobrancas", tags=["Cobranças"])
 
 
+# ==============================
+# GERAR COBRANÇA INDIVIDUAL
+# ==============================
 @router.post("/gerar/{cliente_id}")
 def gerar_cobranca(cliente_id: str):
     cliente_ref = db.collection("clientes").document(cliente_id).get()
@@ -14,7 +17,7 @@ def gerar_cobranca(cliente_id: str):
 
     cliente = cliente_ref.to_dict()
 
-    # ===== Evitar cobrança duplicada no mês =====
+    # Evitar cobrança duplicada no mês
     agora = datetime.utcnow()
     inicio_mes = datetime(agora.year, agora.month, 1)
 
@@ -32,7 +35,6 @@ def gerar_cobranca(cliente_id: str):
                 "Cobrança já existe para este cliente neste mês"
             )
 
-    # ===== Verifica plano do cliente =====
     plano_id = cliente.get("plano_id")
     if not plano_id:
         raise HTTPException(400, "Cliente sem plano")
@@ -44,7 +46,6 @@ def gerar_cobranca(cliente_id: str):
 
     plano = plano_ref.to_dict()
 
-    # ===== Criação da cobrança =====
     vencimento = datetime.utcnow() + timedelta(days=30)
 
     cobranca = {
@@ -53,7 +54,15 @@ def gerar_cobranca(cliente_id: str):
         "valor": plano["valor"],
         "status": "pendente",
         "data_criacao": datetime.utcnow().isoformat(),
-        "data_vencimento": vencimento.isoformat()
+        "data_vencimento": vencimento.isoformat(),
+
+        # campos para integração bancária
+        "gateway": None,
+        "gateway_id": None,
+        "linha_digitavel": None,
+        "pix_qrcode": None,
+        "pix_copia_cola": None,
+        "status_gateway": None
     }
 
     db.collection("cobrancas").add(cobranca)
@@ -61,6 +70,9 @@ def gerar_cobranca(cliente_id: str):
     return {"message": "Cobrança gerada"}
 
 
+# ==============================
+# LISTAR COBRANÇAS
+# ==============================
 @router.get("/")
 def listar_cobrancas():
     docs = db.collection("cobrancas").stream()
@@ -74,6 +86,9 @@ def listar_cobrancas():
     return cobrancas
 
 
+# ==============================
+# MARCAR COMO PAGA
+# ==============================
 @router.put("/pagar/{cobranca_id}")
 def pagar_cobranca(cobranca_id: str):
     ref = db.collection("cobrancas").document(cobranca_id)
@@ -86,6 +101,9 @@ def pagar_cobranca(cobranca_id: str):
     return {"message": "Cobrança marcada como paga"}
 
 
+# ==============================
+# GERAR COBRANÇAS MENSAIS
+# ==============================
 @router.post("/gerar-mensal")
 def gerar_cobrancas_mensais():
     clientes_docs = db.collection("clientes").stream()
@@ -138,7 +156,14 @@ def gerar_cobrancas_mensais():
             "valor": plano["valor"],
             "status": "pendente",
             "data_criacao": datetime.utcnow().isoformat(),
-            "data_vencimento": vencimento.isoformat()
+            "data_vencimento": vencimento.isoformat(),
+
+            "gateway": None,
+            "gateway_id": None,
+            "linha_digitavel": None,
+            "pix_qrcode": None,
+            "pix_copia_cola": None,
+            "status_gateway": None
         }
 
         db.collection("cobrancas").add(cobranca)
@@ -148,3 +173,39 @@ def gerar_cobrancas_mensais():
         "cobrancas_geradas": geradas,
         "clientes_ignorados": ignoradas
     }
+
+
+# ==============================
+# RÉGUA DE COBRANÇA
+# ==============================
+@router.get("/regua")
+def regua_cobranca():
+    docs = db.collection("cobrancas").stream()
+
+    agora = datetime.utcnow()
+    avisos = []
+
+    for doc in docs:
+        data = doc.to_dict()
+        vencimento = datetime.fromisoformat(data["data_vencimento"])
+
+        dias_restantes = (vencimento - agora).days
+
+        if data["status"] == "pago":
+            continue
+
+        status_regua = None
+
+        if dias_restantes <= -5:
+            status_regua = "atraso_5_dias"
+        elif dias_restantes < 0:
+            status_regua = "vencida"
+        elif dias_restantes <= 3:
+            status_regua = "vence_em_breve"
+
+        if status_regua:
+            data["id"] = doc.id
+            data["regua_status"] = status_regua
+            avisos.append(data)
+
+    return avisos
