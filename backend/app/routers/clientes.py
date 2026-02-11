@@ -18,6 +18,13 @@ class Cliente(BaseModel):
     endereco: str
     plano_id: str | None = None
 
+    # rede
+    pppoe_user: str | None = None
+    pppoe_password: str | None = None
+    ip_address: str | None = None
+    conexao_status: str | None = "offline"
+
+
 
 
 @router.post("/")
@@ -55,3 +62,23 @@ def deletar_cliente(cliente_id: int):
     global CLIENTES
     CLIENTES = [c for c in CLIENTES if c["id"] != cliente_id]
     return {"message": "Cliente removido"}
+
+
+from datetime import datetime
+
+
+@router.post("/conectar/{cliente_id}")
+def conectar_cliente(cliente_id: str):
+    ref = db.collection("clientes").document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    ref.update({
+        "conexao_status": "online",
+        "ip_address": "100.64.10.10",
+        "conectado_em": datetime.utcnow().isoformat()
+    })
+
+    return {"message": "Cliente conectado"}

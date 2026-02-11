@@ -209,3 +209,84 @@ def regua_cobranca():
             avisos.append(data)
 
     return avisos
+
+
+import uuid
+
+
+@router.post("/gerar-pix/{cobranca_id}")
+def gerar_pix(cobranca_id: str):
+    ref = db.collection("cobrancas").document(cobranca_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cobrança não encontrada")
+
+    pix_code = f"PIX-{uuid.uuid4().hex}"
+
+    ref.update({
+        "gateway": "PIX_TESTE",
+        "pix_copia_cola": pix_code,
+        "status_gateway": "gerado"
+    })
+
+    return {
+        "message": "PIX gerado",
+        "pix_code": pix_code
+    }
+
+
+@router.post("/confirmar-pagamento/{cobranca_id}")
+def confirmar_pagamento(cobranca_id: str):
+    ref = db.collection("cobrancas").document(cobranca_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cobrança não encontrada")
+
+    dados = doc.to_dict()
+    cliente_id = dados["cliente_id"]
+
+    ref.update({
+        "status": "pago",
+        "status_gateway": "pago",
+        "data_pagamento": datetime.utcnow().isoformat()
+    })
+
+    # desbloqueia cliente
+    db.collection("clientes").document(cliente_id).update({
+        "status": "ativo"
+    })
+
+
+    return {"message": "Pagamento confirmado"}
+
+
+@router.post("/bloqueio-automatico")
+def bloqueio_automatico():
+    docs = db.collection("cobrancas").stream()
+
+    agora = datetime.utcnow()
+    clientes_bloqueados = 0
+
+    for doc in docs:
+        data = doc.to_dict()
+
+        if data["status"] == "pago":
+            continue
+
+        vencimento = datetime.fromisoformat(data["data_vencimento"])
+        dias_atraso = (agora - vencimento).days
+
+        if dias_atraso >= 5:
+            cliente_id = data["cliente_id"]
+
+            db.collection("clientes").document(cliente_id).update({
+                "status": "bloqueado"
+            })
+
+            clientes_bloqueados += 1
+
+    return {
+        "clientes_bloqueados": clientes_bloqueados
+    }
