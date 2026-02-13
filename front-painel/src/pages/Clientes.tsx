@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+import Select from "../components/Select";
+
 import "../styles/clientes.css";
 import {
   FiSearch,
@@ -6,7 +10,31 @@ import {
   FiMoreHorizontal,
 } from "react-icons/fi";
 
+interface Cliente {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  conexao_status?: string;
+}
+
 const Clientes = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [status, setStatus] = useState("todos");
+
+  async function carregarClientes() {
+    try {
+      const response = await api.get("/clientes");
+      setClientes(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar clientes", error);
+    }
+  }
+
+  useEffect(() => {
+    carregarClientes();
+  }, []);
+
   return (
     <div className="clientes-page">
       {/* HEADER */}
@@ -30,15 +58,17 @@ const Clientes = () => {
           </select>
         </div>
 
-        <div className="filter-group">
-          <label>Status</label>
-          <select>
-            <option>Todos</option>
-            <option>Online</option>
-            <option>Offline</option>
-            <option>Bloqueado</option>
-          </select>
-        </div>
+        <Select
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          options={[
+            { label: "Todos", value: "todos" },
+            { label: "Online", value: "online" },
+            { label: "Offline", value: "offline" },
+            { label: "Bloqueado", value: "bloqueado" },
+          ]}
+        />
 
         <div className="filter-group search">
           <label>Buscar</label>
@@ -63,31 +93,32 @@ const Clientes = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>João da Silva</td>
-              <td>joao@email.com</td>
-              <td>(38) 9 9999-9999</td>
-              <td>
-                <span className="status offline">Offline</span>
-              </td>
-              <td className="actions">
-                <FiLock />
-                <FiMoreHorizontal />
-              </td>
-            </tr>
+            {clientes.map((cliente) => (
+              <tr key={cliente.id}>
+                <td>{cliente.nome}</td>
+                <td>{cliente.email}</td>
+                <td>{cliente.telefone}</td>
 
-            <tr>
-              <td>Maria Oliveira</td>
-              <td>maria@email.com</td>
-              <td>(38) 9 8888-8888</td>
-              <td>
-                <span className="status online">Online</span>
-              </td>
-              <td className="actions">
-                <FiLock />
-                <FiMoreHorizontal />
-              </td>
-            </tr>
+                <td>
+                  <span
+                    className={`status ${
+                      cliente.conexao_status === "online"
+                        ? "online"
+                        : "offline"
+                    }`}
+                  >
+                    {cliente.conexao_status === "online"
+                      ? "Online"
+                      : "Offline"}
+                  </span>
+                </td>
+
+                <td className="actions">
+                  <FiLock />
+                  <FiMoreHorizontal />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

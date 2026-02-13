@@ -6,6 +6,8 @@ from app.routers import auth
 from app.routers import clientes
 from app.routers import planos
 from app.routers import cobrancas
+from app.routers import monitoramento
+
 
 
 
@@ -27,6 +29,8 @@ app.include_router(auth.router)
 app.include_router(clientes.router)
 app.include_router(planos.router)
 app.include_router(cobrancas.router)
+app.include_router(monitoramento.router)
+
 
 
 

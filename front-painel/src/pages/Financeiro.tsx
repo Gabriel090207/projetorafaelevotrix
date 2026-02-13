@@ -1,7 +1,49 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 import "../styles/financeiro.css";
-import { FaMoneyBillWave, FaFileInvoiceDollar, FaSearch } from "react-icons/fa";
+import {
+  FaMoneyBillWave,
+  FaFileInvoiceDollar,
+  FaSearch,
+} from "react-icons/fa";
+
+interface Cobranca {
+  id: string;
+  cliente_nome: string;
+  valor: number;
+  status: string;
+  data_vencimento: string;
+}
 
 const Financeiro = () => {
+  const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
+
+  async function carregarCobrancas() {
+    try {
+      const response = await api.get("/cobrancas");
+      setCobrancas(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar cobranças", error);
+    }
+  }
+
+  useEffect(() => {
+    carregarCobrancas();
+  }, []);
+
+  function formatarData(data: string) {
+    const d = new Date(data);
+    return d.toLocaleDateString("pt-BR");
+  }
+
+  function formatarValor(valor: number) {
+    return valor.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
+
   return (
     <div className="financeiro-page">
       {/* HEADER */}
@@ -17,18 +59,24 @@ const Financeiro = () => {
       {/* KPIs */}
       <div className="financeiro-kpis">
         <div className="kpi-card">
-          <span>Faturamento do mês</span>
-          <strong>R$ 124.000</strong>
+          <span>Total cobranças</span>
+          <strong>{cobrancas.length}</strong>
         </div>
 
         <div className="kpi-card warning">
-          <span>Em aberto</span>
-          <strong>R$ 84.230</strong>
+          <span>Pendentes</span>
+          <strong>
+            {
+              cobrancas.filter((c) => c.status === "pendente").length
+            }
+          </strong>
         </div>
 
         <div className="kpi-card danger">
-          <span>Vencidos</span>
-          <strong>R$ 18.900</strong>
+          <span>Pagas</span>
+          <strong>
+            {cobrancas.filter((c) => c.status === "pago").length}
+          </strong>
         </div>
       </div>
 
@@ -69,7 +117,6 @@ const Financeiro = () => {
           <thead>
             <tr>
               <th>Cliente</th>
-              <th>Documento</th>
               <th>Vencimento</th>
               <th>Valor</th>
               <th>Status</th>
@@ -78,31 +125,31 @@ const Financeiro = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>João da Silva</td>
-              <td>FAT-10231</td>
-              <td>05/02/2026</td>
-              <td>R$ 129,90</td>
-              <td>
-                <span className="status open">Em aberto</span>
-              </td>
-              <td className="actions">
-                <FaMoneyBillWave />
-              </td>
-            </tr>
+            {cobrancas.map((cobranca) => (
+              <tr key={cobranca.id}>
+                <td>{cobranca.cliente_nome}</td>
+                <td>{formatarData(cobranca.data_vencimento)}</td>
+                <td>{formatarValor(cobranca.valor)}</td>
 
-            <tr>
-              <td>Maria Oliveira</td>
-              <td>FAT-10218</td>
-              <td>01/02/2026</td>
-              <td>R$ 99,90</td>
-              <td>
-                <span className="status paid">Pago</span>
-              </td>
-              <td className="actions">
-                <FaMoneyBillWave />
-              </td>
-            </tr>
+                <td>
+                  <span
+                    className={`status ${
+                      cobranca.status === "pago"
+                        ? "paid"
+                        : "open"
+                    }`}
+                  >
+                    {cobranca.status === "pago"
+                      ? "Pago"
+                      : "Em aberto"}
+                  </span>
+                </td>
+
+                <td className="actions">
+                  <FaMoneyBillWave />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

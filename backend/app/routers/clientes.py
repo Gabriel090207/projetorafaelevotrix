@@ -48,6 +48,20 @@ def listar_clientes():
 
     return clientes
 
+@router.get("/online")
+def clientes_online():
+    docs = db.collection("clientes") \
+        .where("conexao_status", "==", "online") \
+        .stream()
+
+    clientes = []
+
+    for doc in docs:
+        data = doc.to_dict()
+        data["id"] = doc.id
+        clientes.append(data)
+
+    return clientes
 
 @router.get("/{cliente_id}")
 def buscar_cliente(cliente_id: int):
@@ -82,3 +96,55 @@ def conectar_cliente(cliente_id: str):
     })
 
     return {"message": "Cliente conectado"}
+
+
+import random
+
+
+@router.post("/trafego/{cliente_id}")
+def atualizar_trafego(cliente_id: str):
+    ref = db.collection("clientes").document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    download = round(random.uniform(5, 100), 2)
+    upload = round(random.uniform(2, 50), 2)
+
+    ref.update({
+        "download_mbps": download,
+        "upload_mbps": upload,
+        "trafego_atualizado_em": datetime.utcnow().isoformat()
+    })
+
+    return {
+        "download_mbps": download,
+        "upload_mbps": upload
+    }
+
+@router.post("/trafego-online")
+def atualizar_trafego_online():
+    docs = db.collection("clientes") \
+        .where("conexao_status", "==", "online") \
+        .stream()
+
+    atualizados = 0
+
+    for doc in docs:
+        cliente_id = doc.id
+
+        download = round(random.uniform(5, 100), 2)
+        upload = round(random.uniform(2, 50), 2)
+
+        db.collection("clientes").document(cliente_id).update({
+            "download_mbps": download,
+            "upload_mbps": upload,
+            "trafego_atualizado_em": datetime.utcnow().isoformat()
+        })
+
+        atualizados += 1
+
+    return {
+        "clientes_atualizados": atualizados
+    }
