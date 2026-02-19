@@ -1,13 +1,48 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 import "../styles/relatorios.css";
 import {
-  FaFileAlt,
   FaUser,
   FaMoneyBillWave,
   FaNetworkWired,
+  FaFileAlt,
   FaSearch,
+  FaEye,
+  FaDownload,
 } from "react-icons/fa";
 
+interface Cliente {
+  id: string;
+  nome: string;
+  status: string;
+  data_criacao?: string;
+}
+
 const Relatorios = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [tipoRelatorio, setTipoRelatorio] =
+    useState<string>("clientes");
+
+  async function carregarClientes() {
+    try {
+      setLoading(true);
+      const response = await api.get("/clientes");
+      setClientes(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar relatório de clientes", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tipoRelatorio === "clientes") {
+      carregarClientes();
+    }
+  }, [tipoRelatorio]);
+
   return (
     <div className="relatorios-page">
       {/* HEADER */}
@@ -15,24 +50,44 @@ const Relatorios = () => {
         <h1>Relatórios</h1>
       </div>
 
-      {/* TIPOS DE RELATÓRIOS */}
+      {/* TIPOS */}
       <div className="relatorios-cards">
-        <div className="relatorio-card active">
+        <div
+          className={`relatorio-card ${
+            tipoRelatorio === "clientes" ? "active" : ""
+          }`}
+          onClick={() => setTipoRelatorio("clientes")}
+        >
           <FaUser />
           <span>Clientes</span>
         </div>
 
-        <div className="relatorio-card">
+        <div
+          className={`relatorio-card ${
+            tipoRelatorio === "financeiro" ? "active" : ""
+          }`}
+          onClick={() => setTipoRelatorio("financeiro")}
+        >
           <FaMoneyBillWave />
           <span>Financeiro</span>
         </div>
 
-        <div className="relatorio-card">
+        <div
+          className={`relatorio-card ${
+            tipoRelatorio === "conexao" ? "active" : ""
+          }`}
+          onClick={() => setTipoRelatorio("conexao")}
+        >
           <FaNetworkWired />
           <span>Conexão</span>
         </div>
 
-        <div className="relatorio-card">
+        <div
+          className={`relatorio-card ${
+            tipoRelatorio === "os" ? "active" : ""
+          }`}
+          onClick={() => setTipoRelatorio("os")}
+        >
           <FaFileAlt />
           <span>Ordens de Serviço</span>
         </div>
@@ -55,7 +110,7 @@ const Relatorios = () => {
           <select>
             <option>Todos</option>
             <option>Ativo</option>
-            <option>Inativo</option>
+            <option>Bloqueado</option>
           </select>
         </div>
 
@@ -63,7 +118,7 @@ const Relatorios = () => {
           <label>Buscar</label>
           <div className="search-input">
             <FaSearch />
-            <input placeholder="Nome, CPF ou código" />
+            <input placeholder="Nome ou código" />
           </div>
         </div>
       </div>
@@ -82,25 +137,59 @@ const Relatorios = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>João da Silva</td>
-              <td>Cliente</td>
-              <td>
-                <span className="status active">Ativo</span>
-              </td>
-              <td>05/02/2026</td>
-              <td className="actions">📄 ⬇️</td>
-            </tr>
+            {loading ? (
+              <tr>
+                <td colSpan={5}>Carregando...</td>
+              </tr>
+            ) : tipoRelatorio === "clientes" ? (
+              clientes.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    Nenhum cliente encontrado
+                  </td>
+                </tr>
+              ) : (
+                clientes.map((cliente) => (
+                  <tr key={cliente.id}>
+                    <td>{cliente.nome}</td>
+                    <td>Cliente</td>
 
-            <tr>
-              <td>Maria Oliveira</td>
-              <td>Cliente</td>
-              <td>
-                <span className="status inactive">Inativo</span>
-              </td>
-              <td>01/02/2026</td>
-              <td className="actions">📄 ⬇️</td>
-            </tr>
+                    <td>
+                      <span
+                        className={`status ${
+                          cliente.status === "ativo"
+                            ? "online"
+                            : "offline"
+                        }`}
+                      >
+                        {cliente.status === "ativo"
+                          ? "Ativo"
+                          : "Bloqueado"}
+                      </span>
+                    </td>
+
+                    <td>
+                      {cliente.data_criacao
+                        ? new Date(
+                            cliente.data_criacao
+                          ).toLocaleDateString("pt-BR")
+                        : "-"}
+                    </td>
+
+                    <td className="actions">
+                      <FaEye />
+                      <FaDownload />
+                    </td>
+                  </tr>
+                ))
+              )
+            ) : (
+              <tr>
+                <td colSpan={5}>
+                  Relatório ainda não implementado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -7,10 +7,10 @@ from app.routers import clientes
 from app.routers import planos
 from app.routers import cobrancas
 from app.routers import monitoramento
+from app.routers import bot
 
 
-
-
+from app.routers import mk
 
 app = FastAPI(title="Projeto Evotrix API")
 
@@ -30,8 +30,10 @@ app.include_router(clientes.router)
 app.include_router(planos.router)
 app.include_router(cobrancas.router)
 app.include_router(monitoramento.router)
+app.include_router(bot.router)
 
 
+app.include_router(mk.router)
 
 
 

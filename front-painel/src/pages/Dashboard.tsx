@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 import "../styles/dashboard.css";
 
 import DashboardCard from "../components/DashboardCard";
@@ -5,7 +8,6 @@ import DashboardPanel from "../components/DashboardPanel";
 
 import {
   FaUsers,
-  FaWifi,
   FaUserSlash,
   FaFileInvoiceDollar,
   FaExclamationTriangle,
@@ -23,18 +25,84 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const messagesChartData = [
-  { date: "29/01", value: 22 },
-  { date: "30/01", value: 233 },
-  { date: "31/01", value: 115 },
-  { date: "01/02", value: 184 },
-  { date: "02/02", value: 134 },
-  { date: "03/02", value: 77 },
-  { date: "04/02", value: 76 },
-  { date: "05/02", value: 1 },
-];
+interface Cliente {
+  id: string;
+  status?: string;
+}
+
+interface Cobranca {
+  id: string;
+  status: string;
+  valor: number;
+}
+
+interface BotStats {
+  enviadas: number;
+  recebidas: number;
+  lidas: number;
+  erros: number;
+  bloqueadas: number;
+  grafico: {
+    data: string;
+    quantidade: number;
+  }[];
+}
 
 const Dashboard = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
+  const [botStats, setBotStats] = useState<BotStats | null>(null);
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  async function carregarDados() {
+    try {
+      const [clientesRes, cobrancasRes, botRes] = await Promise.all([
+        api.get("/clientes"),
+        api.get("/cobrancas"),
+        api.get("/bot/stats"),
+      ]);
+
+      setClientes(clientesRes.data);
+      setCobrancas(cobrancasRes.data);
+      setBotStats(botRes.data);
+    } catch (error) {
+      console.error("Erro ao carregar dashboard", error);
+    }
+  }
+
+  // =============================
+  // CONTAGENS
+  // =============================
+
+  const clientesAtivos = clientes.filter(
+    (c) => !c.status || c.status === "ativo"
+  ).length;
+
+  const clientesBloqueados = clientes.filter(
+    (c) => c.status === "bloqueado"
+  ).length;
+
+  const totalPendentes = cobrancas.filter(
+    (c) => c.status === "pendente"
+  );
+
+  const totalPagas = cobrancas.filter(
+    (c) => c.status === "pago"
+  );
+
+  const valorEmAberto = totalPendentes.reduce(
+    (acc, curr) => acc + curr.valor,
+    0
+  );
+
+  const faturamentoPago = totalPagas.reduce(
+    (acc, curr) => acc + curr.valor,
+    0
+  );
+
   return (
     <div className="dashboard-page">
       <h1>Dashboard</h1>
@@ -45,33 +113,33 @@ const Dashboard = () => {
       <div className="dashboard-top">
         <DashboardCard
           title="Clientes Ativos"
-          value="1.248"
+          value={clientesAtivos.toString()}
           icon={<FaUsers />}
           variant="primary"
         />
 
         <DashboardCard
-          title="Online Agora"
-          value="1.102"
-          icon={<FaWifi />}
-          variant="success"
-          subtitle="PPPoE / DHCP / Hotspot"
+          title="Bloqueados"
+          value={clientesBloqueados.toString()}
+          icon={<FaUserSlash />}
+          variant="danger"
         />
 
         <DashboardCard
-          title="Offline"
-          value="146"
-          icon={<FaUserSlash />}
-          variant="danger"
-          subtitle="Possíveis desconectados"
+          title="Total Cobranças"
+          value={cobrancas.length.toString()}
+          icon={<FaFileInvoiceDollar />}
+          variant="warning"
         />
 
         <DashboardCard
           title="Em Aberto"
-          value="R$ 84.230"
-          icon={<FaFileInvoiceDollar />}
-          variant="warning"
-          subtitle="Faturas pendentes"
+          value={valorEmAberto.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
+          icon={<FaMoneyBillWave />}
+          variant="success"
         />
       </div>
 
@@ -85,17 +153,19 @@ const Dashboard = () => {
           variant="attention"
         >
           <ul>
-            <li>3 clientes offline há mais de 30 minutos</li>
-            <li>5 boletos vencidos hoje</li>
-            <li>2 ordens de serviço abertas</li>
+            <li>{clientesBloqueados} clientes bloqueados</li>
+            <li>{totalPendentes.length} faturas pendentes</li>
           </ul>
         </DashboardPanel>
 
-        <DashboardPanel title="Rede" icon={<FaNetworkWired />} variant="network">
+        <DashboardPanel
+          title="Rede"
+          icon={<FaNetworkWired />}
+          variant="network"
+        >
           <ul>
-            <li>1.102 clientes online</li>
-            <li>4 OLTs ativas</li>
-            <li>PPPoE • DHCP • Hotspot</li>
+            <li>{clientesAtivos} clientes ativos</li>
+            <li>Monitoramento ativo</li>
           </ul>
         </DashboardPanel>
 
@@ -105,38 +175,37 @@ const Dashboard = () => {
           variant="finance"
         >
           <ul>
-            <li>Faturamento do mês: R$ 124.000</li>
-            <li>18 faturas em aberto</li>
-            <li>42 vencimentos próximos</li>
+            <li>
+              Faturamento pago:{" "}
+              {faturamentoPago.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </li>
+            <li>{totalPendentes.length} em aberto</li>
           </ul>
         </DashboardPanel>
       </div>
 
       {/* =======================
-          PAINEL DE MENSAGENS
+          BOT ANALYTICS
       ======================= */}
       <div className="dashboard-messages-block">
         <div className="messages-card">
           <div className="messages-header">
             <h3>Mensagens — Esta Semana</h3>
-
-            <div className="messages-status online">
-              <span className="dot" />
-              Online
-            </div>
           </div>
 
-          {/* GRÁFICO */}
-          <div style={{ width: "100%", height: 280, marginBottom: 30, marginTop: 40 }}>
+          <div style={{ width: "100%", height: 280, marginTop: 40 }}>
             <ResponsiveContainer>
-              <LineChart data={messagesChartData}>
+              <LineChart data={botStats?.grafico || []}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" />
+                <XAxis dataKey="data" />
                 <YAxis />
                 <Tooltip />
                 <Line
                   type="monotone"
-                  dataKey="value"
+                  dataKey="quantidade"
                   stroke="#64748b"
                   strokeWidth={3}
                   dot={{ r: 5 }}
@@ -145,30 +214,30 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* RESUMO */}
+          {/* MÉTRICAS */}
           <div className="messages-metrics">
             <div className="messages-metric success">
-              <strong>827</strong>
+              <strong>{botStats?.enviadas || 0}</strong>
               <span>Enviadas</span>
             </div>
 
             <div className="messages-metric">
-              <strong>767</strong>
+              <strong>{botStats?.recebidas || 0}</strong>
               <span>Recebidas</span>
             </div>
 
             <div className="messages-metric">
-              <strong>492</strong>
+              <strong>{botStats?.lidas || 0}</strong>
               <span>Lidas</span>
             </div>
 
             <div className="messages-metric warning">
-              <strong>10</strong>
+              <strong>{botStats?.bloqueadas || 0}</strong>
               <span>Bloqueadas</span>
             </div>
 
             <div className="messages-metric danger">
-              <strong>5</strong>
+              <strong>{botStats?.erros || 0}</strong>
               <span>Erros</span>
             </div>
           </div>
