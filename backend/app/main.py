@@ -11,6 +11,8 @@ from app.routers import bot
 
 
 from app.routers import mk
+from app.routers import integracoes
+
 
 app = FastAPI(title="Projeto Evotrix API")
 
@@ -34,6 +36,7 @@ app.include_router(bot.router)
 
 
 app.include_router(mk.router)
+app.include_router(integracoes.router)
 
 
 

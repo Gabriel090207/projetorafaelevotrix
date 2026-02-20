@@ -35,3 +35,25 @@
   transform: translateY(-3px);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
+
+
+.config-card {
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.config-card.active {
+  outline: 2px solid rgba(220, 38, 38, 0.25);
+}
+
+.config-content {
+  margin-top: 25px;
+}
+
+.config-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

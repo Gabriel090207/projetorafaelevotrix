@@ -1,9 +1,20 @@
-from fastapi import APIRouter
-from app.integrations.mk_auth import MKAuth
+from fastapi import APIRouter, HTTPException
+from app.services.mk_auth import MKAuth
 
-router = APIRouter(prefix="/mk", tags=["MK-Auth"])
+router = APIRouter(prefix="/mk", tags=["MK-AUTH"])
 
-@router.get("/clientes")
-def listar_clientes():
-    mk = MKAuth()
-    return mk.listar_clientes()
+
+# ==============================
+# LISTAR CLIENTES DO MK
+# ==============================
+
+@router.get("/{empresa_id}/clientes")
+def listar_clientes_mk(empresa_id: str):
+
+    try:
+        mk = MKAuth(empresa_id)
+        resultado = mk.listar_clientes()
+        return resultado
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
