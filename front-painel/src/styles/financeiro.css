@@ -100,8 +100,16 @@
   color: #166534;
 }
 
+
+.status.cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .actions svg {
   cursor: pointer;
   font-size: 18px;
   color: #6b7280;
 }
+
+

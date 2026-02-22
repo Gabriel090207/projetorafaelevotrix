@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 from app.core.firebase import db
+from app.services.sgp_auth import SGPAuth
 
 router = APIRouter(prefix="/integracoes", tags=["Integrações"])
 
@@ -90,3 +91,25 @@ def buscar_integracao(empresa_id: str, tipo: str):
         return data
 
     raise HTTPException(404, "Integração não encontrada")
+
+
+# ==============================
+# TESTAR CONEXÃO SGP
+# ==============================
+
+@router.post("/{empresa_id}/sgp/testar")
+def testar_sgp(empresa_id: str):
+    try:
+        sgp = SGPAuth(empresa_id=empresa_id)
+        return sgp.testar_conexao()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+
+
+from app.services.sgp_auth import SGPAuth
+
+@router.get("/{empresa_id}/sgp/cliente/{cpfcnpj}")
+def buscar_cliente_sgp(empresa_id: str, cpfcnpj: str):
+    sgp = SGPAuth(empresa_id)
+    return sgp.buscar_cliente(cpfcnpj)

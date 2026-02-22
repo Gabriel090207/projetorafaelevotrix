@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
 import Select from "../components/Select";
 
@@ -8,6 +8,7 @@ import {
   FiUserPlus,
   FiLock,
   FiMoreHorizontal,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 interface Cliente {
@@ -18,22 +19,92 @@ interface Cliente {
   conexao_status?: string;
 }
 
+const EMPRESA_ID = "empresa_teste";
+
 const Clientes = () => {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  // 🔥 STATE já inicia com cache (SEM DELAY)
+  const [clientes, setClientes] = useState<Cliente[]>(() => {
+    const cache = localStorage.getItem("clientes_cache");
+    return cache ? JSON.parse(cache) : [];
+  });
+
   const [status, setStatus] = useState("todos");
+  const [busca, setBusca] = useState("");
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
 
-  async function carregarClientes() {
-    try {
-      const response = await api.get("/clientes");
-      setClientes(response.data);
-    } catch (error) {
-      console.error("Erro ao carregar clientes", error);
-    }
-  }
-
+  // =========================
+  // Atualiza silenciosamente
+  // =========================
   useEffect(() => {
-    carregarClientes();
+    async function atualizarClientes() {
+      try {
+        const response = await api.get("/clientes/");
+
+        setClientes(response.data);
+
+        // atualiza cache
+        localStorage.setItem(
+          "clientes_cache",
+          JSON.stringify(response.data)
+        );
+      } catch (error) {
+        console.error("Erro ao atualizar clientes", error);
+      }
+    }
+
+    atualizarClientes();
   }, []);
+
+  // =========================
+  // SINCRONIZAR
+  // =========================
+async function sincronizarClientes() {
+  try {
+    setSyncLoading(true);
+    setSyncMsg("Iniciando sincronização...");
+
+    await api.post(
+  `/clientes/sync/sgp/${EMPRESA_ID}/all-job`
+);
+
+    setSyncMsg("Sincronização iniciada em background 🔄");
+
+  } catch (e) {
+    console.error(e);
+    setSyncMsg("Erro ao sincronizar ❌");
+  } finally {
+    setSyncLoading(false);
+  }
+}
+
+  // =========================
+  // FILTRO + ORDEM
+  // =========================
+  const clientesFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+
+    return clientes
+      .filter((c) => {
+        const matchStatus =
+          status === "todos"
+            ? true
+            : (c.conexao_status || "offline") === status;
+
+        const matchBusca =
+          !termo ||
+          (c.nome || "").toLowerCase().includes(termo) ||
+          (c.email || "").toLowerCase().includes(termo) ||
+          (c.telefone || "").toLowerCase().includes(termo);
+
+        return matchStatus && matchBusca;
+      })
+      .sort((a, b) =>
+        (a.nome || "").localeCompare(b.nome || "", "pt-BR", {
+          sensitivity: "base",
+        })
+      );
+  }, [clientes, status, busca]);
 
   return (
     <div className="clientes-page">
@@ -41,11 +112,29 @@ const Clientes = () => {
       <div className="clientes-header">
         <h1>Clientes</h1>
 
-        <button className="btn-primary">
-          <FiUserPlus />
-          Novo Cliente
-        </button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            className="btn-primary"
+            onClick={sincronizarClientes}
+            disabled={syncLoading}
+            title="Sincronizar clientes"
+          >
+            <FiRefreshCw />
+            {syncLoading ? "Sincronizando..." : "Sincronizar"}
+          </button>
+
+          <button className="btn-primary">
+            <FiUserPlus />
+            Novo Cliente
+          </button>
+        </div>
       </div>
+
+      {syncMsg && (
+        <div style={{ marginTop: 10, marginBottom: 10, opacity: 0.9 }}>
+          <small>{syncMsg}</small>
+        </div>
+      )}
 
       {/* FILTROS */}
       <div className="clientes-filters">
@@ -66,7 +155,6 @@ const Clientes = () => {
             { label: "Todos", value: "todos" },
             { label: "Online", value: "online" },
             { label: "Offline", value: "offline" },
-            { label: "Bloqueado", value: "bloqueado" },
           ]}
         />
 
@@ -74,7 +162,11 @@ const Clientes = () => {
           <label>Buscar</label>
           <div className="search-input">
             <FiSearch />
-            <input placeholder="Nome, e-mail ou telefone" />
+            <input
+              placeholder="Nome, e-mail ou telefone"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
           </div>
         </div>
       </div>
@@ -93,7 +185,7 @@ const Clientes = () => {
           </thead>
 
           <tbody>
-            {clientes.map((cliente) => (
+            {clientesFiltrados.map((cliente) => (
               <tr key={cliente.id}>
                 <td>{cliente.nome}</td>
                 <td>{cliente.email}</td>
@@ -119,6 +211,14 @@ const Clientes = () => {
                 </td>
               </tr>
             ))}
+
+            {clientesFiltrados.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: 16, opacity: 0.7 }}>
+                  Nenhum cliente encontrado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -27,7 +27,7 @@ import {
 
 interface Cliente {
   id: string;
-  status?: string;
+  conexao_status?: string;
 }
 
 interface Cobranca {
@@ -60,46 +60,56 @@ const Dashboard = () => {
   async function carregarDados() {
     try {
       const [clientesRes, cobrancasRes, botRes] = await Promise.all([
-        api.get("/clientes"),
-        api.get("/cobrancas"),
+        api.get("/clientes/"),
+        api.get("/cobrancas/"),
         api.get("/bot/stats"),
       ]);
 
-      setClientes(clientesRes.data);
-      setCobrancas(cobrancasRes.data);
-      setBotStats(botRes.data);
+      setClientes(clientesRes.data || []);
+      setCobrancas(cobrancasRes.data || []);
+      setBotStats(botRes.data || null);
     } catch (error) {
       console.error("Erro ao carregar dashboard", error);
     }
   }
 
   // =============================
-  // CONTAGENS
+  // CLIENTES
   // =============================
 
-  const clientesAtivos = clientes.filter(
-    (c) => !c.status || c.status === "ativo"
-  ).length;
+  const clientesOnline = clientes.filter(
+    (c) => c.conexao_status === "online"
+  );
 
-  const clientesBloqueados = clientes.filter(
-    (c) => c.status === "bloqueado"
-  ).length;
+  const clientesOffline = clientes.filter(
+    (c) => c.conexao_status === "offline"
+  );
 
-  const totalPendentes = cobrancas.filter(
-    (c) => c.status === "pendente"
+  const clientesAtivos = clientesOnline.length;
+  const clientesBloqueados = clientesOffline.length;
+
+  // =============================
+  // COBRANÇAS
+  // =============================
+
+  const totalEmAberto = cobrancas.filter(
+    (c) =>
+      c.status === "em_aberto" ||
+      c.status === "pendente" ||
+      c.status === "aberto"
   );
 
   const totalPagas = cobrancas.filter(
     (c) => c.status === "pago"
   );
 
-  const valorEmAberto = totalPendentes.reduce(
-    (acc, curr) => acc + curr.valor,
+  const valorEmAberto = totalEmAberto.reduce(
+    (acc, curr) => acc + (curr.valor || 0),
     0
   );
 
   const faturamentoPago = totalPagas.reduce(
-    (acc, curr) => acc + curr.valor,
+    (acc, curr) => acc + (curr.valor || 0),
     0
   );
 
@@ -153,8 +163,8 @@ const Dashboard = () => {
           variant="attention"
         >
           <ul>
-            <li>{clientesBloqueados} clientes bloqueados</li>
-            <li>{totalPendentes.length} faturas pendentes</li>
+            <li>{clientesBloqueados} clientes offline</li>
+            <li>{totalEmAberto.length} faturas em aberto</li>
           </ul>
         </DashboardPanel>
 
@@ -164,7 +174,7 @@ const Dashboard = () => {
           variant="network"
         >
           <ul>
-            <li>{clientesAtivos} clientes ativos</li>
+            <li>{clientesAtivos} clientes online</li>
             <li>Monitoramento ativo</li>
           </ul>
         </DashboardPanel>
@@ -182,7 +192,7 @@ const Dashboard = () => {
                 currency: "BRL",
               })}
             </li>
-            <li>{totalPendentes.length} em aberto</li>
+            <li>{totalEmAberto.length} em aberto</li>
           </ul>
         </DashboardPanel>
       </div>
@@ -214,7 +224,6 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* MÉTRICAS */}
           <div className="messages-metrics">
             <div className="messages-metric success">
               <strong>{botStats?.enviadas || 0}</strong>

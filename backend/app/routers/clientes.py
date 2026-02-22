@@ -1,61 +1,257 @@
-from fastapi import APIRouter, HTTPException
-from app.core.firebase import db
+# app/routers/clientes.py
 
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+from datetime import datetime
+import random
+
+from app.core.firebase import db
+from app.services.sgp_auth import SGPAuth
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
 
-# Banco temporário em memória
-CLIENTES = []
-NEXT_ID = 1
 
+# =========================
+# Models
+# =========================
 class Cliente(BaseModel):
     nome: str
     documento: str
     telefone: str
     email: str
     endereco: str
-    plano_id: str | None = None
+    plano_id: Optional[str] = None
 
     # rede
-    pppoe_user: str | None = None
-    pppoe_password: str | None = None
-    ip_address: str | None = None
-    conexao_status: str | None = "offline"
+    pppoe_user: Optional[str] = None
+    pppoe_password: Optional[str] = None
+    ip_address: Optional[str] = None
+    conexao_status: Optional[str] = "offline"
+
+
+class SyncClientesSgpInput(BaseModel):
+    cpfs: List[str]
+
+
+# =========================
+# Helpers
+# =========================
+def only_digits(s: str) -> str:
+    return "".join([c for c in (s or "") if c.isdigit()])
+
+
+def map_conexao_status(sgp_cliente: dict) -> str:
+    """
+    Online se encontrar termos positivos no status do cliente OU do contrato.
+    Fontes:
+    - sgp_cliente["status"] / ["situacao"]
+    - sgp_cliente["contratos"][0]["status"] / ["situacao"]
+    """
+    partes = []
+
+    # status do cliente (raiz)
+    partes.append(str(sgp_cliente.get("status") or ""))
+    partes.append(str(sgp_cliente.get("situacao") or ""))
+
+    # status do contrato (primeiro contrato)
+    contratos = sgp_cliente.get("contratos") or []
+    if isinstance(contratos, list) and contratos:
+        c0 = contratos[0] or {}
+        if isinstance(c0, dict):
+            partes.append(str(c0.get("status") or ""))
+            partes.append(str(c0.get("situacao") or ""))
+
+    status_txt = " ".join([p for p in partes if p]).upper()
+
+    termos_online = ["REGULAR", "LIBERADO", "ATIVO", "HABILITADO", "NORMAL", "EM DIA"]
+    for termo in termos_online:
+        if termo in status_txt:
+            return "online"
+
+    return "offline"
+
+
+def _now():
+    return datetime.utcnow().isoformat()
+
+
+def _update_job(job_ref, **kwargs):
+    kwargs["updated_at"] = _now()
+    job_ref.update(kwargs)
 
 
 
 
+def run_sync_clientes_sgp_all_job(job_id: str, empresa_id: str, limit: int = 100):
+    job_ref = db.collection("sync_jobs").document(job_id)
+
+    try:
+        _update_job(job_ref, status="running", progress=0, message="Iniciando sincronização (todos)...")
+
+        sgp = SGPAuth(empresa_id)
+
+        inseridos = 0
+        atualizados = 0
+        total_titulos = 0
+        erros = []
+        total_lidos = 0
+        offset = 0
+
+        while True:
+            res = sgp.listar_clientes(limit=limit, offset=offset)
+
+            if not res.get("ok"):
+                _update_job(job_ref, status="error", message=str(res.get("erro") or "Falha ao listar clientes"))
+                return
+
+            dados = res.get("dados") or {}
+            clientes = dados.get("clientes") or []
+            if not clientes:
+                break
+
+            for c in clientes:
+                try:
+                    documento = only_digits(c.get("cpfcnpj") or "")
+                    if not documento:
+                        continue
+
+                    contatos = c.get("contatos") or {}
+
+                    emails = contatos.get("emails") if isinstance(contatos, dict) else []
+                    email = (c.get("email") or (emails[0] if isinstance(emails, list) and emails else "") or "").strip()
+
+                    celulares = contatos.get("celulares") if isinstance(contatos, dict) else []
+                    telefone = (
+                        c.get("telefone")
+                        or c.get("celular")
+                        or (celulares[0] if isinstance(celulares, list) and celulares else "")
+                        or ""
+                    )
+                    telefone = str(telefone).strip()
+
+                    end = c.get("endereco", {}) or {}
+                    endereco_txt = (
+                        f'{end.get("logradouro","")}, {end.get("numero","")}, {end.get("bairro","")}, '
+                        f'{end.get("cidade","")}-{end.get("uf","")}, CEP {end.get("cep","")}'
+                    )
+
+                    payload = {
+                        "nome": c.get("nome", ""),
+                        "documento": documento,
+                        "telefone": telefone,
+                        "email": email,
+                        "endereco": endereco_txt.strip().strip(","),
+                        "conexao_status": map_conexao_status(c),
+
+                        "origem": "sgp",
+                        "empresa_id": empresa_id,
+                        "sgp_cliente_id": c.get("id"),
+                        "sgp_status_raw": c.get("status") or c.get("situacao"),
+                        "sgp_raw": c,
+                        "sincronizado_em": _now(),
+                    }
+
+                    ref = db.collection("clientes").document(documento)
+                    doc = ref.get()
+
+                    if doc.exists:
+                        ref.set(payload, merge=True)
+                        atualizados += 1
+                    else:
+                        ref.set({**payload, "criado_em": _now()}, merge=True)
+                        inseridos += 1
+
+                    # =========================
+                    # 🔥 AQUI SINCRONIZA TÍTULOS
+                    # =========================
+                    titulos = c.get("titulos") or []
+
+                    for titulo in titulos:
+                        db.collection("cobrancas").document(
+                            str(titulo.get("id"))
+                        ).set({
+                            "empresa_id": empresa_id,
+                            "cliente_id": titulo.get("cliente_id"),
+                            "cliente_nome": c.get("nome"),
+                            "valor": titulo.get("valor"),
+                            "valor_pago": titulo.get("valorPago"),
+                            "status": titulo.get("status"),
+                            "data_vencimento": titulo.get("dataVencimento"),
+                            "data_pagamento": titulo.get("dataPagamento"),
+                            "numero_documento": titulo.get("numeroDocumento"),
+                            "linha_digitavel": titulo.get("linhaDigitavel"),
+                            "codigo_barras": titulo.get("codigoBarras"),
+                            "codigo_pix": titulo.get("codigoPix"),
+                            "link_boleto": titulo.get("link"),
+                            "origem": "sgp",
+                            "sincronizado_em": _now()
+                        }, merge=True)
+
+                        total_titulos += 1
+
+                except Exception as e:
+                    erros.append({"documento": c.get("cpfcnpj"), "erro": str(e)})
+
+            total_lidos += len(clientes)
+            offset += limit
+
+            _update_job(
+                job_ref,
+                status="running",
+                message=f"Lidos {total_lidos} clientes...",
+                progress=min(99, (total_lidos // limit)),
+                total_lidos=total_lidos,
+                inseridos=inseridos,
+                atualizados=atualizados,
+                titulos_sincronizados=total_titulos
+            )
+
+        _update_job(
+            job_ref,
+            status="done",
+            progress=100,
+            message="Sincronização concluída ✅",
+            total_lidos=total_lidos,
+            inseridos=inseridos,
+            atualizados=atualizados,
+            titulos_sincronizados=total_titulos,
+            erros=erros
+        )
+
+    except Exception as e:
+        _update_job(job_ref, status="error", message=str(e))
+# =========================
+# CRUD Clientes (Firebase)
+# =========================
 @router.post("/")
 def criar_cliente(cliente: Cliente):
-    data = cliente.dict()
-
-    doc_ref = db.collection("clientes").add(data)
-
+    data = cliente.model_dump()
+    data["criado_em"] = datetime.utcnow().isoformat()
+    db.collection("clientes").add(data)
     return {"message": "Cliente criado"}
 
 
 @router.get("/")
 def listar_clientes():
     docs = db.collection("clientes").stream()
-
     clientes = []
     for doc in docs:
         c = doc.to_dict()
         c["id"] = doc.id
         clientes.append(c)
-
     return clientes
+
 
 @router.get("/online")
 def clientes_online():
-    docs = db.collection("clientes") \
-        .where("conexao_status", "==", "online") \
+    docs = (
+        db.collection("clientes")
+        .where("conexao_status", "==", "online")
         .stream()
+    )
 
     clientes = []
-
     for doc in docs:
         data = doc.to_dict()
         data["id"] = doc.id
@@ -63,24 +259,35 @@ def clientes_online():
 
     return clientes
 
-@router.get("/{cliente_id}")
-def buscar_cliente(cliente_id: int):
-    for c in CLIENTES:
-        if c["id"] == cliente_id:
-            return c
 
-    raise HTTPException(404, "Cliente não encontrado")
+@router.get("/{cliente_id}")
+def buscar_cliente(cliente_id: str):
+    ref = db.collection("clientes").document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    data = doc.to_dict()
+    data["id"] = doc.id
+    return data
+
 
 @router.delete("/{cliente_id}")
-def deletar_cliente(cliente_id: int):
-    global CLIENTES
-    CLIENTES = [c for c in CLIENTES if c["id"] != cliente_id]
+def deletar_cliente(cliente_id: str):
+    ref = db.collection("clientes").document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    ref.delete()
     return {"message": "Cliente removido"}
 
 
-from datetime import datetime
-
-
+# =========================
+# Simulações de rede
+# =========================
 @router.post("/conectar/{cliente_id}")
 def conectar_cliente(cliente_id: str):
     ref = db.collection("clientes").document(cliente_id)
@@ -96,9 +303,6 @@ def conectar_cliente(cliente_id: str):
     })
 
     return {"message": "Cliente conectado"}
-
-
-import random
 
 
 @router.post("/trafego/{cliente_id}")
@@ -118,22 +322,21 @@ def atualizar_trafego(cliente_id: str):
         "trafego_atualizado_em": datetime.utcnow().isoformat()
     })
 
-    return {
-        "download_mbps": download,
-        "upload_mbps": upload
-    }
+    return {"download_mbps": download, "upload_mbps": upload}
+
 
 @router.post("/trafego-online")
 def atualizar_trafego_online():
-    docs = db.collection("clientes") \
-        .where("conexao_status", "==", "online") \
+    docs = (
+        db.collection("clientes")
+        .where("conexao_status", "==", "online")
         .stream()
+    )
 
     atualizados = 0
 
     for doc in docs:
         cliente_id = doc.id
-
         download = round(random.uniform(5, 100), 2)
         upload = round(random.uniform(2, 50), 2)
 
@@ -145,6 +348,243 @@ def atualizar_trafego_online():
 
         atualizados += 1
 
-    return {
-        "clientes_atualizados": atualizados
-    }
+    return {"clientes_atualizados": atualizados}
+
+
+# =========================
+# Sync SGP em lote (por CPFs)
+# Endpoint: POST /clientes/sync/sgp/{empresa_id}
+# Body: { "cpfs": ["12166675603", "..."] }
+# =========================
+@router.post("/sync/sgp/{empresa_id}")
+def sync_clientes_sgp(empresa_id: str, body: SyncClientesSgpInput):
+    if not body.cpfs:
+        raise HTTPException(400, detail="cpfs é obrigatório")
+
+    sgp = SGPAuth(empresa_id)
+
+    inseridos = 0
+    atualizados = 0
+    erros = []
+
+    for raw in body.cpfs:
+        cpfcnpj = only_digits(raw)
+
+        if not cpfcnpj:
+            erros.append({"cpfcnpj": raw, "erro": "cpfcnpj inválido"})
+            continue
+
+        try:
+            res = sgp.consultar_cliente_por_cpfcnpj(cpfcnpj)
+
+            if not res.get("ok"):
+                erros.append({
+                    "cpfcnpj": cpfcnpj,
+                    "erro": res.get("erro") or res.get("detalhe") or "Falha SGP"
+                })
+                continue
+
+            dados = res.get("dados") or {}
+            clientes = dados.get("clientes") or []
+            if not clientes:
+                erros.append({"cpfcnpj": cpfcnpj, "erro": "Cliente não encontrado no SGP"})
+                continue
+
+            c = clientes[0]
+
+            # endereço
+            end = c.get("endereco", {}) or {}
+            endereco_txt = (
+                f'{end.get("logradouro","")}, {end.get("numero","")}, {end.get("bairro","")}, '
+                f'{end.get("cidade","")}-{end.get("uf","")}, CEP {end.get("cep","")}'
+            )
+
+            documento = only_digits(c.get("cpfcnpj") or cpfcnpj)
+
+            # ✅ contatos.* (SEU CASO)
+            contatos = c.get("contatos") or {}
+
+            emails = []
+            if isinstance(contatos, dict):
+                emails = contatos.get("emails") or []
+
+            email = (c.get("email") or (emails[0] if isinstance(emails, list) and emails else "") or "").strip()
+
+            celulares = []
+            if isinstance(contatos, dict):
+                celulares = contatos.get("celulares") or []
+
+            telefone = (
+                c.get("telefone")
+                or c.get("celular")
+                or (celulares[0] if isinstance(celulares, list) and celulares else "")
+                or ""
+            )
+            telefone = str(telefone).strip()
+
+            payload = {
+                "nome": c.get("nome", ""),
+                "documento": documento,
+                "telefone": telefone,
+                "email": email,
+                "endereco": endereco_txt.strip().strip(","),
+                "plano_id": None,
+
+                "pppoe_user": None,
+                "pppoe_password": None,
+                "ip_address": None,
+
+                # regra de status
+                "conexao_status": map_conexao_status(c),
+
+                "origem": "sgp",
+                "sgp_cliente_id": c.get("id"),
+                "sgp_status_raw": c.get("status") or c.get("situacao"),
+                "sgp_raw": c,  # debug
+                "sincronizado_em": datetime.utcnow().isoformat(),
+            }
+
+            # UPSERT por documento
+            existing = list(
+                db.collection("clientes")
+                .where("documento", "==", documento)
+                .limit(1)
+                .stream()
+            )
+
+            if existing:
+                doc = existing[0]
+                db.collection("clientes").document(doc.id).update(payload)
+                atualizados += 1
+            else:
+                db.collection("clientes").add({**payload, "criado_em": datetime.utcnow().isoformat()})
+                inseridos += 1
+
+        except Exception as e:
+            erros.append({"cpfcnpj": cpfcnpj, "erro": str(e)})
+
+    return {"ok": True, "inseridos": inseridos, "atualizados": atualizados, "erros": erros}
+
+
+
+
+
+def _run_sync_all_job(job_id: str, empresa_id: str, limit: int = 100):
+    job_ref = db.collection("sync_jobs").document(job_id)
+
+    def update(**kwargs):
+        kwargs["updated_at"] = datetime.utcnow().isoformat()
+        job_ref.update(kwargs)
+
+    try:
+        sgp = SGPAuth(empresa_id)
+
+        inseridos = 0
+        atualizados = 0
+        erros = []
+        total_lidos = 0
+        offset = 0
+
+        update(status="running", progress=0, message="Iniciando sync total...")
+
+        while True:
+            res = sgp.listar_clientes(limit=limit, offset=offset)
+
+            if not res.get("ok"):
+                update(status="error", message=str(res.get("erro") or "Falha ao listar clientes"))
+                return
+
+            dados = res.get("dados") or {}
+            clientes = dados.get("clientes") or []
+            if not clientes:
+                break
+
+            for c in clientes:
+                try:
+                    documento = only_digits(c.get("cpfcnpj") or "")
+                    if not documento:
+                        continue
+
+                    contatos = c.get("contatos") or {}
+
+                    emails = contatos.get("emails") if isinstance(contatos, dict) else []
+                    email = (c.get("email") or (emails[0] if isinstance(emails, list) and emails else "") or "").strip()
+
+                    celulares = contatos.get("celulares") if isinstance(contatos, dict) else []
+                    telefone = (
+                        c.get("telefone")
+                        or c.get("celular")
+                        or (celulares[0] if isinstance(celulares, list) and celulares else "")
+                        or ""
+                    )
+                    telefone = str(telefone).strip()
+
+                    end = c.get("endereco", {}) or {}
+                    endereco_txt = (
+                        f'{end.get("logradouro","")}, {end.get("numero","")}, {end.get("bairro","")}, '
+                        f'{end.get("cidade","")}-{end.get("uf","")}, CEP {end.get("cep","")}'
+                    )
+
+                    payload = {
+                        "nome": c.get("nome", ""),
+                        "documento": documento,
+                        "telefone": telefone,
+                        "email": email,
+                        "endereco": endereco_txt.strip().strip(","),
+                        "conexao_status": map_conexao_status(c),
+
+                        "origem": "sgp",
+                        "empresa_id": empresa_id,
+                        "sgp_cliente_id": c.get("id"),
+                        "sgp_status_raw": c.get("status") or c.get("situacao"),
+                        "sgp_raw": c,
+                        "sincronizado_em": datetime.utcnow().isoformat(),
+                    }
+
+                    ref = db.collection("clientes").document(documento)
+
+                    doc = ref.get()
+                    if doc.exists:
+                        ref.set(payload, merge=True)
+                        atualizados += 1
+                    else:
+                        ref.set({**payload, "criado_em": _now()}, merge=True)
+                        inseridos += 1
+
+                except Exception as e:
+                    erros.append({"documento": c.get("cpfcnpj"), "erro": str(e)})
+
+            total_lidos += len(clientes)
+            offset += limit
+
+            # progresso aproximado (sem total do SGP, só indica andamento)
+            update(status="running", message=f"Lidos {total_lidos} clientes...", progress=min(99, (total_lidos // limit)))
+
+        update(status="done", progress=100, message=f"Concluído ✅ Lidos {total_lidos}", inseridos=inseridos, atualizados=atualizados, erros=erros)
+
+    except Exception as e:
+        update(status="error", message=str(e))
+
+
+
+@router.post("/sync/sgp/{empresa_id}/all-job")
+def start_sync_clientes_sgp_all_job(empresa_id: str, background_tasks: BackgroundTasks, limit: int = 50):
+    job_ref = db.collection("sync_jobs").document()
+    job_ref.set({
+        "empresa_id": empresa_id,
+        "tipo": "clientes_all",
+        "integracao_tipo": "sgp",
+        "status": "queued",
+        "created_at": _now(),
+        "updated_at": _now(),
+        "progress": 0,
+        "message": "Job criado",
+        "limit": limit,
+        "total_lidos": 0,
+        "inseridos": 0,
+        "atualizados": 0,
+    })
+
+    background_tasks.add_task(run_sync_clientes_sgp_all_job, job_ref.id, empresa_id, limit)
+
+    return {"ok": True, "job_id": job_ref.id, "status": "queued"}

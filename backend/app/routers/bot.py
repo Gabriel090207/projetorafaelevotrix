@@ -366,3 +366,22 @@ def bot_stats():
         "bloqueadas": bloqueadas,
         "grafico": grafico
     }
+
+
+from app.services.receitanet_service import ReceitaNetService
+
+def avisar_cobranca(cliente, empresa_id):
+    service = ReceitaNetService(empresa_id)
+
+    mensagem = f"""
+Olá {cliente['nome']} 👋
+
+Identificamos uma fatura em aberto.
+
+Por favor, regularize para evitar bloqueio.
+"""
+
+    service.enviar_mensagem(
+        numero=cliente["telefone"],
+        mensagem=mensagem
+    )

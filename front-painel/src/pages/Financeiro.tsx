@@ -21,7 +21,7 @@ const Financeiro = () => {
 
   async function carregarCobrancas() {
     try {
-      const response = await api.get("/cobrancas");
+      const response = await api.get("/cobrancas/");
       setCobrancas(response.data);
     } catch (error) {
       console.error("Erro ao carregar cobranças", error);
@@ -64,10 +64,10 @@ const Financeiro = () => {
         </div>
 
         <div className="kpi-card warning">
-          <span>Pendentes</span>
+          <span>Em Aberto</span>
           <strong>
             {
-              cobrancas.filter((c) => c.status === "pendente").length
+             cobrancas.filter((c) => c.status === "pendente" || c.status === "aberto").length
             }
           </strong>
         </div>
@@ -132,18 +132,22 @@ const Financeiro = () => {
                 <td>{formatarValor(cobranca.valor)}</td>
 
                 <td>
-                  <span
-                    className={`status ${
-                      cobranca.status === "pago"
-                        ? "paid"
-                        : "open"
-                    }`}
-                  >
-                    {cobranca.status === "pago"
-                      ? "Pago"
-                      : "Em aberto"}
-                  </span>
-                </td>
+  <span
+    className={`status ${
+      cobranca.status === "pago"
+        ? "paid"
+        : cobranca.status === "cancelado"
+        ? "cancelled"
+        : "open"
+    }`}
+  >
+    {cobranca.status === "pago"
+      ? "Pago"
+      : cobranca.status === "cancelado"
+      ? "Cancelado"
+      : "Em aberto"}
+  </span>
+</td>
 
                 <td className="actions">
                   <FaMoneyBillWave />

@@ -12,7 +12,9 @@ from app.routers import bot
 
 from app.routers import mk
 from app.routers import integracoes
-
+from app.routers import webhooks
+from app.routers import sync
+from app.routers import receitanet
 
 app = FastAPI(title="Projeto Evotrix API")
 
@@ -37,7 +39,9 @@ app.include_router(bot.router)
 
 app.include_router(mk.router)
 app.include_router(integracoes.router)
-
+app.include_router(webhooks.router)
+app.include_router(sync.router)
+app.include_router(receitanet.router)
 
 
 @app.get("/")
