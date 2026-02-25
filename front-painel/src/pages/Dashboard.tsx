@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 
 import "../styles/dashboard.css";
@@ -27,7 +27,7 @@ import {
 
 interface Cliente {
   id: string;
-  conexao_status?: string;
+  status?: string;
 }
 
 interface Cobranca {
@@ -48,68 +48,88 @@ interface BotStats {
   }[];
 }
 
+// 🔥 CACHE GLOBAL EM MEMÓRIA
+let dashboardCache: {
+  clientes: Cliente[];
+  cobrancas: Cobranca[];
+  botStats: BotStats | null;
+} | null = null;
+
 const Dashboard = () => {
+  const jaCarregou = useRef(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [botStats, setBotStats] = useState<BotStats | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!jaCarregou.current) {
     carregarDados();
-  }, []);
+    jaCarregou.current = true;
+  }
+}, []);
 
   async function carregarDados() {
     try {
+      // 🔥 Se já tiver cache em memória, usa ele
+      if (dashboardCache) {
+        setClientes(dashboardCache.clientes);
+        setCobrancas(dashboardCache.cobrancas);
+        setBotStats(dashboardCache.botStats);
+        return;
+      }
+
+      // 🔥 Só busca backend se não tiver cache
       const [clientesRes, cobrancasRes, botRes] = await Promise.all([
-        api.get("/clientes/"),
-        api.get("/cobrancas/"),
+        api.get("/clientes"),
+        api.get("/cobrancas"),
         api.get("/bot/stats"),
       ]);
 
-      setClientes(clientesRes.data || []);
-      setCobrancas(cobrancasRes.data || []);
-      setBotStats(botRes.data || null);
+      const dados = {
+        clientes: clientesRes.data,
+        cobrancas: cobrancasRes.data,
+        botStats: botRes.data,
+      };
+
+      // salva no cache global
+      dashboardCache = dados;
+
+      setClientes(dados.clientes);
+      setCobrancas(dados.cobrancas);
+      setBotStats(dados.botStats);
+
     } catch (error) {
       console.error("Erro ao carregar dashboard", error);
     }
   }
 
   // =============================
-  // CLIENTES
+  // CONTAGENS
   // =============================
 
-  const clientesOnline = clientes.filter(
-    (c) => c.conexao_status === "online"
-  );
+  const clientesAtivos = clientes.filter(
+    (c) => !c.status || c.status === "ativo"
+  ).length;
 
-  const clientesOffline = clientes.filter(
-    (c) => c.conexao_status === "offline"
-  );
+  const clientesBloqueados = clientes.filter(
+    (c) => c.status === "bloqueado"
+  ).length;
 
-  const clientesAtivos = clientesOnline.length;
-  const clientesBloqueados = clientesOffline.length;
-
-  // =============================
-  // COBRANÇAS
-  // =============================
-
-  const totalEmAberto = cobrancas.filter(
-    (c) =>
-      c.status === "em_aberto" ||
-      c.status === "pendente" ||
-      c.status === "aberto"
+  const totalPendentes = cobrancas.filter(
+    (c) => c.status === "pendente"
   );
 
   const totalPagas = cobrancas.filter(
     (c) => c.status === "pago"
   );
 
-  const valorEmAberto = totalEmAberto.reduce(
-    (acc, curr) => acc + (curr.valor || 0),
+  const valorEmAberto = totalPendentes.reduce(
+    (acc, curr) => acc + curr.valor,
     0
   );
 
   const faturamentoPago = totalPagas.reduce(
-    (acc, curr) => acc + (curr.valor || 0),
+    (acc, curr) => acc + curr.valor,
     0
   );
 
@@ -117,9 +137,6 @@ const Dashboard = () => {
     <div className="dashboard-page">
       <h1>Dashboard</h1>
 
-      {/* =======================
-          CARDS SUPERIORES
-      ======================= */}
       <div className="dashboard-top">
         <DashboardCard
           title="Clientes Ativos"
@@ -153,9 +170,6 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* =======================
-          PAINÉIS
-      ======================= */}
       <div className="dashboard-panels">
         <DashboardPanel
           title="Atenção"
@@ -163,8 +177,8 @@ const Dashboard = () => {
           variant="attention"
         >
           <ul>
-            <li>{clientesBloqueados} clientes offline</li>
-            <li>{totalEmAberto.length} faturas em aberto</li>
+            <li>{clientesBloqueados} clientes bloqueados</li>
+            <li>{totalPendentes.length} faturas pendentes</li>
           </ul>
         </DashboardPanel>
 
@@ -174,7 +188,7 @@ const Dashboard = () => {
           variant="network"
         >
           <ul>
-            <li>{clientesAtivos} clientes online</li>
+            <li>{clientesAtivos} clientes ativos</li>
             <li>Monitoramento ativo</li>
           </ul>
         </DashboardPanel>
@@ -192,14 +206,11 @@ const Dashboard = () => {
                 currency: "BRL",
               })}
             </li>
-            <li>{totalEmAberto.length} em aberto</li>
+            <li>{totalPendentes.length} em aberto</li>
           </ul>
         </DashboardPanel>
       </div>
 
-      {/* =======================
-          BOT ANALYTICS
-      ======================= */}
       <div className="dashboard-messages-block">
         <div className="messages-card">
           <div className="messages-header">

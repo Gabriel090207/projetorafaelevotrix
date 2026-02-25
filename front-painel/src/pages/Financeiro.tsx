@@ -16,12 +16,25 @@ interface Cobranca {
   data_vencimento: string;
 }
 
+// 🔥 CACHE GLOBAL EM MEMÓRIA
+let cobrancasCache: Cobranca[] | null = null;
+
 const Financeiro = () => {
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
 
   async function carregarCobrancas() {
     try {
+      // 🔥 Se já tiver cache, usa ele
+      if (cobrancasCache) {
+        setCobrancas(cobrancasCache);
+        return;
+      }
+
       const response = await api.get("/cobrancas/");
+
+      // 🔥 Salva no cache
+      cobrancasCache = response.data;
+
       setCobrancas(response.data);
     } catch (error) {
       console.error("Erro ao carregar cobranças", error);
@@ -46,7 +59,6 @@ const Financeiro = () => {
 
   return (
     <div className="financeiro-page">
-      {/* HEADER */}
       <div className="financeiro-header">
         <h1>Financeiro</h1>
 
@@ -56,7 +68,6 @@ const Financeiro = () => {
         </button>
       </div>
 
-      {/* KPIs */}
       <div className="financeiro-kpis">
         <div className="kpi-card">
           <span>Total cobranças</span>
@@ -64,11 +75,9 @@ const Financeiro = () => {
         </div>
 
         <div className="kpi-card warning">
-          <span>Em Aberto</span>
+          <span>Pendentes</span>
           <strong>
-            {
-             cobrancas.filter((c) => c.status === "pendente" || c.status === "aberto").length
-            }
+            {cobrancas.filter((c) => c.status === "pendente").length}
           </strong>
         </div>
 
@@ -80,7 +89,6 @@ const Financeiro = () => {
         </div>
       </div>
 
-      {/* FILTROS */}
       <div className="financeiro-filters">
         <div className="filter-group">
           <label>Status</label>
@@ -111,7 +119,6 @@ const Financeiro = () => {
         </div>
       </div>
 
-      {/* TABELA */}
       <div className="financeiro-table-wrapper">
         <table className="financeiro-table">
           <thead>
@@ -132,22 +139,18 @@ const Financeiro = () => {
                 <td>{formatarValor(cobranca.valor)}</td>
 
                 <td>
-  <span
-    className={`status ${
-      cobranca.status === "pago"
-        ? "paid"
-        : cobranca.status === "cancelado"
-        ? "cancelled"
-        : "open"
-    }`}
-  >
-    {cobranca.status === "pago"
-      ? "Pago"
-      : cobranca.status === "cancelado"
-      ? "Cancelado"
-      : "Em aberto"}
-  </span>
-</td>
+                  <span
+                    className={`status ${
+                      cobranca.status === "pago"
+                        ? "paid"
+                        : "open"
+                    }`}
+                  >
+                    {cobranca.status === "pago"
+                      ? "Pago"
+                      : "Em aberto"}
+                  </span>
+                </td>
 
                 <td className="actions">
                   <FaMoneyBillWave />
