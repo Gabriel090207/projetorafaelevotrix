@@ -1,19 +1,19 @@
 import { useState } from "react";
 import "../styles/config.css";
 
-import { FaUserCog, FaPlug, FaMoneyCheckAlt, FaShieldAlt } from "react-icons/fa";
+import { FaBuilding, FaUserCog, FaPlug, FaMoneyCheckAlt, FaShieldAlt } from "react-icons/fa";
 
 // Componentes (vamos criar já já)
+import EmpresaPanel from "../components/config/EmpresaPanel";
 import IntegracoesPanel from "../components/config/IntegracoesPanel";
 import GatewaysPanel from "../components/config/GatewaysPanel";
 import UsuariosPanel from "../components/config/UsuariosPanel";
 import SegurancaPanel from "../components/config/SegurancaPanel";
 
-type AbaConfig = "usuarios" | "integracoes" | "gateways" | "seguranca";
+type AbaConfig = "empresa" | "usuarios" | "integracoes" | "gateways" | "seguranca";
 
 const Configuracoes = () => {
-  const [aba, setAba] = useState<AbaConfig>("usuarios");
-
+  const [aba, setAba] = useState<AbaConfig>("empresa");
 
   return (
     <div className="config-page">
@@ -22,6 +22,17 @@ const Configuracoes = () => {
       </div>
 
       <div className="config-cards">
+
+
+        <button
+  type="button"
+  className={`config-card ${aba === "empresa" ? "active" : ""}`}
+  onClick={() => setAba("empresa")}
+>
+  <FaBuilding />
+  <span>Empresa</span>
+</button>
+
         <button
           type="button"
           className={`config-card ${aba === "usuarios" ? "active" : ""}`}
@@ -61,6 +72,7 @@ const Configuracoes = () => {
 
       {/* CONTEÚDO ABAIXO (mesmo visual do resto do sistema) */}
       <div className="config-content">
+        {aba === "empresa" && <EmpresaPanel />}
         {aba === "usuarios" && <UsuariosPanel />}
         {aba === "integracoes" && <IntegracoesPanel />}
         {aba === "gateways" && <GatewaysPanel />}

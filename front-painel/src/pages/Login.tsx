@@ -2,6 +2,9 @@ import { useState } from "react";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../services/firebase";
+
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -39,13 +42,33 @@ const Login = () => {
     </div>
 
     <div className="social-login">
-      <button className="social-button google">
-        <span>G</span>
-      </button>
+   <button
+  className="social-button google"
+  onClick={async () => {
+    try {
+     const result = await signInWithPopup(auth, googleProvider);
+const token = await result.user.getIdToken();
 
-      <button className="social-button facebook">
-        <span>f</span>
-      </button>
+localStorage.setItem("token", token);
+
+// 🔥 Chama backend para sincronizar usuário
+await fetch("http://localhost:8000/auth/sync-user", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${token}`
+  }
+});
+
+navigate("/dashboard");
+    } catch (error) {
+      console.error("Erro login Google:", error);
+      alert("Erro ao fazer login com Google");
+    }
+  }}
+>
+  <span>G</span>
+</button>
+    
     </div>
   </>
 ) : (

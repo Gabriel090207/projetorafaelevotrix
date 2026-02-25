@@ -1,0 +1,210 @@
+/* =========================
+   WRAPPER
+========================= */
+
+.empresa-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.empresa-panel {
+  width: 100%;
+  max-width: 1200px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.empresa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.empresa-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.empresa-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* =========================
+   GRID
+========================= */
+
+.empresa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.empresa-field.full {
+  grid-column: span 2;
+}
+
+/* =========================
+   CAMPOS
+========================= */
+
+.empresa-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.empresa-field label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.empresa-field input {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--background-light);
+  font-size: 14px;
+  transition: 0.2s ease;
+  outline: none;
+}
+
+.empresa-field input:focus {
+  border-color: var(--primary-red);
+  background: #ffffff;
+  box-shadow: none;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.empresa-status {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  height: fit-content;
+}
+
+.empresa-status.ativa {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.empresa-status.inativa {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* =========================
+   AÇÕES
+========================= */
+
+.empresa-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.btn-save {
+  background: var(--primary-red);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  background: var(--primary-red-hover);
+}
+
+/* =========================
+   TOAST CENTRAL ANIMADO
+========================= */
+
+.toast-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.toast {
+  margin-top: 20px;
+  padding: 16px 28px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  animation: slideDownFade 3s ease forwards;
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.toast.sucesso {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.toast.erro {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@keyframes slideDownFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.erro-msg {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.empresa-field input {
+  outline: none;
+}
+
+.btn-save:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
