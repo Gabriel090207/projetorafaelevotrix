@@ -290,3 +290,22 @@ def bloqueio_automatico():
     return {
         "clientes_bloqueados": clientes_bloqueados
     }
+
+
+
+@router.get("/empresa/{empresa_id}")
+def listar_cobrancas_empresa(empresa_id: str):
+    docs = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .stream()
+    )
+
+    cobrancas = []
+    for doc in docs:
+        data = doc.to_dict()
+        data["id"] = doc.id
+        cobrancas.append(data)
+
+    return cobrancas

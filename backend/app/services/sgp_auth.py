@@ -6,12 +6,13 @@ from app.core.firebase import db
 class SGPAuth:
     def __init__(self, empresa_id: str):
         docs = (
-            db.collection("integracoes")
-            .where("empresa_id", "==", empresa_id)
+            db.collection("empresas")
+            .document(empresa_id)
+            .collection("integracoes")
             .where("tipo", "==", "sgp")
             .where("ativo", "==", True)
             .stream()
-        )
+        )               
 
         config = None
         for doc in docs:

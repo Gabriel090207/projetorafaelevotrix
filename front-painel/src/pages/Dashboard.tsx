@@ -25,9 +25,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+
+const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
+
 interface Cliente {
   id: string;
-  status?: string;
+  conexao_status?: string;
 }
 
 interface Cobranca {
@@ -49,11 +52,14 @@ interface BotStats {
 }
 
 // 🔥 CACHE GLOBAL EM MEMÓRIA
-let dashboardCache: {
-  clientes: Cliente[];
-  cobrancas: Cobranca[];
-  botStats: BotStats | null;
-} | null = null;
+let dashboardCache: Record<
+  string,
+  {
+    clientes: Cliente[];
+    cobrancas: Cobranca[];
+    botStats: BotStats | null;
+  }
+> = {};
 
 const Dashboard = () => {
   const jaCarregou = useRef(false);
@@ -61,66 +67,71 @@ const Dashboard = () => {
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [botStats, setBotStats] = useState<BotStats | null>(null);
 
-useEffect(() => {
-  if (!jaCarregou.current) {
-    carregarDados();
-    jaCarregou.current = true;
-  }
-}, []);
+  useEffect(() => {
+    if (!jaCarregou.current) {
+      carregarDados();
+      jaCarregou.current = true;
+    }
+  }, []);
 
   async function carregarDados() {
     try {
-      // 🔥 Se já tiver cache em memória, usa ele
-      if (dashboardCache) {
-        setClientes(dashboardCache.clientes);
-        setCobrancas(dashboardCache.cobrancas);
-        setBotStats(dashboardCache.botStats);
-        return;
-      }
+      if (dashboardCache[EMPRESA_ID]) {
+  setClientes(dashboardCache[EMPRESA_ID].clientes);
+  setCobrancas(dashboardCache[EMPRESA_ID].cobrancas);
+  setBotStats(dashboardCache[EMPRESA_ID].botStats);
+  return;
+}
 
-      // 🔥 Só busca backend se não tiver cache
-      const [clientesRes, cobrancasRes, botRes] = await Promise.all([
-        api.get("/clientes"),
-        api.get("/cobrancas"),
-        api.get("/bot/stats"),
-      ]);
 
+const [clientesRes, cobrancasRes] = await Promise.all([
+  api.get(`/clientes/empresa/${EMPRESA_ID}`),
+  api.get(`/cobrancas/empresa/${EMPRESA_ID}`),
+]);
+
+let botRes = { data: null };
+
+try {
+  botRes = await api.get(`/bot/stats/${EMPRESA_ID}`);
+} catch {
+  console.warn("Bot stats ainda não disponível");
+}
       const dados = {
         clientes: clientesRes.data,
         cobrancas: cobrancasRes.data,
         botStats: botRes.data,
       };
 
-      // salva no cache global
-      dashboardCache = dados;
+     dashboardCache[EMPRESA_ID] = dados;
 
       setClientes(dados.clientes);
       setCobrancas(dados.cobrancas);
       setBotStats(dados.botStats);
-
     } catch (error) {
       console.error("Erro ao carregar dashboard", error);
     }
   }
 
   // =============================
-  // CONTAGENS
+  // CONTAGENS CORRIGIDAS
   // =============================
 
+  // ✅ CLIENTES
   const clientesAtivos = clientes.filter(
-    (c) => !c.status || c.status === "ativo"
-  ).length;
+  (c) => c.conexao_status?.toLowerCase() === "online"
+).length;
 
-  const clientesBloqueados = clientes.filter(
-    (c) => c.status === "bloqueado"
-  ).length;
+const clientesBloqueados = clientes.filter(
+  (c) => c.conexao_status?.toLowerCase() !== "online"
+).length;
 
+  // ✅ COBRANÇAS (somente status "aberto")
   const totalPendentes = cobrancas.filter(
-    (c) => c.status === "pendente"
+    (c) => c.status?.toLowerCase() === "aberto"
   );
 
   const totalPagas = cobrancas.filter(
-    (c) => c.status === "pago"
+    (c) => c.status?.toLowerCase() === "pago"
   );
 
   const valorEmAberto = totalPendentes.reduce(
@@ -178,7 +189,7 @@ useEffect(() => {
         >
           <ul>
             <li>{clientesBloqueados} clientes bloqueados</li>
-            <li>{totalPendentes.length} faturas pendentes</li>
+            <li>{totalPendentes.length} faturas em aberto</li>
           </ul>
         </DashboardPanel>
 

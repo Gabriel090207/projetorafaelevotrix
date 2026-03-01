@@ -52,12 +52,17 @@ const token = await result.user.getIdToken();
 localStorage.setItem("token", token);
 
 // 🔥 Chama backend para sincronizar usuário
-await fetch("http://localhost:8000/auth/sync-user", {
+const response = await fetch("http://localhost:8000/auth/sync-user", {
   method: "POST",
   headers: {
     "Authorization": `Bearer ${token}`
   }
 });
+
+const data = await response.json();
+
+// 🔥 SALVA EMPRESA_ID
+localStorage.setItem("empresa_id", data.empresa_id);
 
 navigate("/dashboard");
     } catch (error) {

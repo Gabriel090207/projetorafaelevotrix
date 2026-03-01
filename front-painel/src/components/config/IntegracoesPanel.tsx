@@ -1,13 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../styles/integracoes.css";
-
 import {
   FaServer,
-  FaUniversity,
-  FaMoneyBillWave,
-  FaFileInvoice,
-  FaNetworkWired,
-  FaRobot,
   FaBars,
   FaEdit,
   FaTrash,
@@ -21,77 +15,112 @@ type Integracao = {
 };
 
 const integracoesDisponiveis: Integracao[] = [
-  { id: "mk_auth", nome: "MK-AUTH", descricao: "Integração com MK-AUTH", icon: <FaServer /> },
   { id: "sgp", nome: "SGP", descricao: "Integração com SGP", icon: <FaServer /> },
-  { id: "mikweb", nome: "MIKWEB", descricao: "Integração com MikWeb", icon: <FaServer /> },
-  { id: "receitanet", nome: "ReceitaNet", descricao: "Chatbot/ReceitaNet", icon: <FaRobot /> },
-  { id: "nfcom", nome: "NFCom", descricao: "Emissão de Nota Fiscal", icon: <FaFileInvoice /> },
-  { id: "mikrotik_radius", nome: "MikroTik (Radius)", descricao: "PPPoE/DHCP/Hotspot", icon: <FaNetworkWired /> },
-  { id: "banco_brasil", nome: "Banco do Brasil", descricao: "Boletos e PIX", icon: <FaUniversity /> },
-  { id: "efi_bank", nome: "Efí Bank", descricao: "Gateway PIX/Boleto", icon: <FaMoneyBillWave /> },
 ];
 
-
-type IntegracaoCriada = {
+type IntegracaoSalva = {
   id: string;
-  sistema: string;
+  tipo: string;
   nome: string;
-  status: "conectado" | "erro" | "timeout";
+  ativo: boolean;
 };
-
-const integracoesCriadas: IntegracaoCriada[] = [
-  {
-    id: "1",
-    sistema: "MK-AUTH",
-    nome: "MegaNet Tecnologia",
-    status: "timeout",
-  },
-  {
-    id: "2",
-    sistema: "BANCO INTER",
-    nome: "PIX - INTER",
-    status: "erro",
-  },
-  {
-    id: "3",
-    sistema: "BANCO DO BRASIL",
-    nome: "PIX BB",
-    status: "conectado",
-  },
-  {
-    id: "4",
-    sistema: "EFI BANK",
-    nome: "Pix_MegaNet Tecnologia",
-    status: "conectado",
-  },
-  {
-    id: "5",
-    sistema: "SGP",
-    nome: "SGP",
-    status: "conectado",
-  },
-];
 
 const IntegracoesPanel = () => {
   const [selecionada, setSelecionada] = useState<Integracao | null>(null);
+  const [integracoes, setIntegracoes] = useState<IntegracaoSalva[]>([]);
+
+  const [nomeIntegracao, setNomeIntegracao] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [appKey, setAppKey] = useState("");
+  const [tokenSgp, setTokenSgp] = useState("");
+
+  useEffect(() => {
+    carregarIntegracoes();
+  }, []);
+
+  async function carregarIntegracoes() {
+    try {
+      const empresaId = localStorage.getItem("empresa_id");
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:8000/integracoes/${empresaId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      setIntegracoes(data);
+    } catch (err) {
+      console.error("Erro ao carregar integrações", err);
+    }
+  }
+
+  async function salvarIntegracao() {
+    try {
+      const empresaId = localStorage.getItem("empresa_id");
+      const token = localStorage.getItem("token");
+
+      const payload = {
+        empresa_id: empresaId,
+        tipo: selecionada?.id,
+        nome: nomeIntegracao,
+        config: {
+          base_url: baseUrl,
+          app: appKey,
+          token: tokenSgp,
+          verify_ssl: true,
+        },
+        ativo: true,
+      };
+
+      const response = await fetch("http://localhost:8000/integracoes/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      alert("Integração salva com sucesso!");
+
+      setSelecionada(null);
+      setNomeIntegracao("");
+      setBaseUrl("");
+      setAppKey("");
+      setTokenSgp("");
+
+      carregarIntegracoes();
+    } catch {
+      alert("Erro ao salvar integração");
+    }
+  }
 
   return (
     <div className="integracoes-panel">
       <div className="panel-header">
         <h2>Integrações</h2>
-        <p>Configure as integrações do provedor (cliente do seu cliente).</p>
+        <p>Configure as integrações do provedor.</p>
       </div>
 
+      {/* DISPONÍVEIS */}
       <div className="integracoes-grid">
         {integracoesDisponiveis.map((item) => (
           <button
             key={item.id}
-            type="button"
             className="integracao-card"
             onClick={() => setSelecionada(item)}
           >
             <div className="integracao-icon">{item.icon}</div>
-            <div className="integracao-text">
+            <div>
               <h3>{item.nome}</h3>
               <p>{item.descricao}</p>
             </div>
@@ -99,73 +128,90 @@ const IntegracoesPanel = () => {
         ))}
       </div>
 
-
+      {/* LISTA SALVAS */}
       <div className="integracoes-lista">
-  <table className="integracoes-table">
-    <thead>
-      <tr>
-        <th>Sistema</th>
-        <th>Nome</th>
-        <th>Status</th>
-        <th>Opções</th>
-      </tr>
-    </thead>
-    <tbody>
-      {integracoesCriadas.map((item) => (
-        <tr key={item.id}>
-          <td>{item.sistema}</td>
-          <td>{item.nome}</td>
-          <td>
-            <span className={`status-badge ${item.status}`}>
-              {item.status === "conectado" && "CONECTADO"}
-              {item.status === "erro" && "ERRO DESCONHECIDO"}
-              {item.status === "timeout" && "SERVIDOR TIMEOUT"}
-            </span>
-          </td>
-          <td>
-            <div className="acoes">
-  <FaBars />
-  <FaEdit />
-  <FaTrash />
-</div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+        <table className="integracoes-table">
+          <thead>
+            <tr>
+              <th>Sistema</th>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Opções</th>
+            </tr>
+          </thead>
+          <tbody>
+            {integracoes.map((item) => (
+              <tr key={item.id}>
+                <td>{item.tipo.toUpperCase()}</td>
+                <td>{item.nome}</td>
+                <td>
+                  <span
+                    className={`status-badge ${
+                      item.ativo ? "conectado" : "erro"
+                    }`}
+                  >
+                    {item.ativo ? "ATIVO" : "INATIVO"}
+                  </span>
+                </td>
+                <td>
+                  <div className="acoes">
+                    <FaBars />
+                    <FaEdit />
+                    <FaTrash />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      
-
+      {/* MODAL */}
       {selecionada && (
         <div className="integracao-modal">
           <div className="modal-content">
             <div className="modal-header">
               <h3>Configurar {selecionada.nome}</h3>
-              <button className="modal-close" onClick={() => setSelecionada(null)}>
-                ✕
-              </button>
+              <button onClick={() => setSelecionada(null)}>✕</button>
             </div>
 
             <div className="modal-form">
-              <label>Nome (identificação)</label>
-              <input placeholder="Ex: MegaNet Tecnologia" />
+              <label>Nome da integração</label>
+              <input
+                value={nomeIntegracao}
+                onChange={(e) => setNomeIntegracao(e.target.value)}
+              />
 
-              <label>URL / Base URL</label>
-              <input placeholder="https://seu-host/api" />
+              <label>Base URL</label>
+              <input
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+              />
 
-              <label>Usuário / App Key</label>
-              <input placeholder="admin / app_key" />
+              <label>App</label>
+              <input
+                value={appKey}
+                onChange={(e) => setAppKey(e.target.value)}
+              />
 
-              <label>Senha / Secret Key</label>
-              <input placeholder="senha / secret" type="password" />
+              <label>Token</label>
+              <input
+                type="password"
+                value={tokenSgp}
+                onChange={(e) => setTokenSgp(e.target.value)}
+              />
             </div>
 
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setSelecionada(null)}>
+              <button
+                className="btn-secondary"
+                onClick={() => setSelecionada(null)}
+              >
                 Cancelar
               </button>
-              <button className="btn-primary">Salvar</button>
+              <button className="btn-primary" onClick={salvarIntegracao}>
+                Salvar
+              </button>
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ security = HTTPBearer()
 
 
 # =========================
-# DEPENDÊNCIA PARA VALIDAR TOKEN FIREBASE
+# VALIDAR TOKEN FIREBASE
 # =========================
 def get_current_user(credentials=Depends(security)):
     try:
@@ -31,42 +31,52 @@ def sync_user(user=Depends(get_current_user)):
     email = user.get("email")
     nome = user.get("name", email.split("@")[0])
 
-    # Verifica se usuário já existe
-    user_doc = db.collection("usuarios").document(uid).get()
+    empresas_ref = db.collection("empresas")
 
-    if user_doc.exists:
-        data = user_doc.to_dict()
-        return {
-            "message": "Usuário já existente",
-            "empresa_id": data["empresa_id"],
-            "perfil": data["perfil"]
-        }
+    # =========================
+    # VERIFICAR SE USUÁRIO JÁ EXISTE EM ALGUMA EMPRESA
+    # =========================
+    for empresa in empresas_ref.stream():
+        user_doc = empresa.reference.collection("usuarios").document(uid).get()
+
+        if user_doc.exists:
+            data = user_doc.to_dict()
+
+            return {
+                "message": "Usuário já existente",
+                "empresa_id": empresa.id,
+                "perfil": data.get("perfil", "usuario")
+            }
 
     # =========================
     # PRIMEIRO LOGIN → CRIAR EMPRESA
     # =========================
     empresa_id = str(uuid.uuid4())
 
+    # Criar empresa
     db.collection("empresas").document(empresa_id).set({
-        "nome": dados.empresa_nome,
+        "nome": f"{nome} Telecom",
         "plano": "trial",
         "status": "ativa",
         "cnpj": "",
         "telefone": "",
-        "email": "",
+        "email": email,
         "endereco": "",
         "criado_em": datetime.utcnow().isoformat()
     })
 
-    # Criar usuário admin
-    db.collection("usuarios").document(uid).set({
-        "nome": nome,
-        "email": email,
-        "empresa_id": empresa_id,
-        "perfil": "admin",
-        "ativo": True,
-        "criado_em": datetime.utcnow().isoformat()
-    })
+    # Criar usuário ADMIN dentro da empresa
+    db.collection("empresas") \
+      .document(empresa_id) \
+      .collection("usuarios") \
+      .document(uid) \
+      .set({
+          "nome": nome,
+          "email": email,
+          "perfil": "admin",
+          "ativo": True,
+          "criado_em": datetime.utcnow().isoformat()
+      })
 
     return {
         "message": "Usuário criado com sucesso",
@@ -76,23 +86,26 @@ def sync_user(user=Depends(get_current_user)):
 
 
 # =========================
-# ROTA PARA PEGAR DADOS DO USUÁRIO LOGADO
+# PEGAR DADOS DO USUÁRIO LOGADO
 # =========================
 @router.get("/me")
 def get_me(user=Depends(get_current_user)):
 
     uid = user["uid"]
 
-    user_doc = db.collection("usuarios").document(uid).get()
+    empresas_ref = db.collection("empresas")
 
-    if not user_doc.exists:
-        raise HTTPException(404, "Usuário não encontrado")
+    for empresa in empresas_ref.stream():
+        user_doc = empresa.reference.collection("usuarios").document(uid).get()
 
-    data = user_doc.to_dict()
+        if user_doc.exists:
+            data = user_doc.to_dict()
 
-    return {
-        "uid": uid,
-        "email": user.get("email"),
-        "empresa_id": data["empresa_id"],
-        "perfil": data["perfil"]
-    }
+            return {
+                "uid": uid,
+                "email": user.get("email"),
+                "empresa_id": empresa.id,
+                "perfil": data.get("perfil", "usuario")
+            }
+
+    raise HTTPException(404, "Usuário não encontrado")

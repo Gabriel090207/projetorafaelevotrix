@@ -19,7 +19,7 @@ interface Cliente {
   conexao_status?: string;
 }
 
-const EMPRESA_ID = "empresa_teste";
+const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
 
 const Clientes = () => {
   // 🔥 STATE já inicia com cache (SEM DELAY)
@@ -39,7 +39,7 @@ const Clientes = () => {
   useEffect(() => {
     async function atualizarClientes() {
       try {
-        const response = await api.get("/clientes/");
+        const response = await api.get(`/clientes/empresa/${EMPRESA_ID}`);
 
         setClientes(response.data);
 
@@ -62,21 +62,22 @@ const Clientes = () => {
 async function sincronizarClientes() {
   try {
     setSyncLoading(true);
-    setSyncMsg("Iniciando sincronização...");
+    setSyncMsg("Criando job de sincronização...");
 
     await api.post(
-  `/clientes/sync/sgp/${EMPRESA_ID}/all-job`
-);
+      `/clientes/sync/sgp/${EMPRESA_ID}/all-job`
+    );
 
-    setSyncMsg("Sincronização iniciada em background 🔄");
+    setSyncMsg("Sincronização iniciada 🚀 Aguarde alguns minutos...");
+    setSyncLoading(false);
 
   } catch (e) {
     console.error(e);
-    setSyncMsg("Erro ao sincronizar ❌");
-  } finally {
+    setSyncMsg("Erro ao iniciar sincronização ❌");
     setSyncLoading(false);
   }
 }
+
 
   // =========================
   // FILTRO + ORDEM

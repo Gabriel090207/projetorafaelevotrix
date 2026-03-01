@@ -1,10 +1,14 @@
+/* =========================
+   HEADER
+========================= */
+
 .integracoes-panel .panel-header {
   margin-bottom: 28px;
 }
 
 .integracoes-panel .panel-header h2 {
-    margin-top: 30px;
-    margin-left: 10px;
+  margin-top: 30px;
+  margin-left: 10px;
   font-size: 24px;
   margin-bottom: 4px;
 }
@@ -15,6 +19,10 @@
   font-size: 14px;
   margin-left: 10px;
 }
+
+/* =========================
+   GRID INTEGRAÇÕES
+========================= */
 
 .integracoes-grid {
   display: grid;
@@ -57,7 +65,10 @@
   color: #6b7280;
 }
 
-/* Modal */
+/* =========================
+   MODAL
+========================= */
+
 .integracao-modal {
   position: fixed;
   inset: 0;
@@ -119,6 +130,8 @@
   background: #f3f4f6;
   padding: 10px 14px;
   border-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-primary {
@@ -126,11 +139,13 @@
   color: #fff;
   padding: 10px 14px;
   border-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
-
-
-/* LISTA DE INTEGRAÇÕES CRIADAS */
+/* =========================
+   LISTA DE INTEGRAÇÕES
+========================= */
 
 .integracoes-lista {
   margin-top: 45px;
@@ -147,9 +162,9 @@
 
 .integracoes-table th,
 .integracoes-table td {
-  padding: 14px;
+  padding: 16px 20px;
   border-bottom: 1px solid #e5e7eb;
-  text-align: left;
+  vertical-align: middle;
 }
 
 .integracoes-table th {
@@ -159,47 +174,79 @@
   background: #f9fafb;
 }
 
-/* STATUS BADGE */
+/* =========================
+   ALINHAMENTOS FINOS
+========================= */
+
+/* Sistema */
+.integracoes-table td:nth-child(1),
+.integracoes-table th:nth-child(1) {
+  text-align: left;
+  padding-left: 28px;
+}
+
+/* Nome */
+.integracoes-table td:nth-child(2),
+.integracoes-table th:nth-child(2) {
+  text-align: center;
+}
+
+/* Status */
+.integracoes-table td:nth-child(3),
+.integracoes-table th:nth-child(3) {
+  text-align: center;
+}
+
+/* Opções */
+/* Coluna Opções centralizada */
+.integracoes-table th:nth-child(4),
+.integracoes-table td:nth-child(4) {
+  text-align: center;
+  padding-right: 0;
+}
+
+/* Ícones centralizados */
+.acoes {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* CENTRALIZA */
+  gap: 18px;
+}
+/* =========================
+   STATUS BADGE
+========================= */
 
 .status-badge {
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   display: inline-block;
 }
 
-/* CONECTADO */
 .status-badge.conectado {
   background: #d1fae5;
   color: #065f46;
 }
 
-/* ERRO */
 .status-badge.erro {
   background: #fee2e2;
   color: #991b1b;
 }
 
-/* TIMEOUT */
-.status-badge.timeout {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-/* AÇÕES */
+/* =========================
+   AÇÕES
+========================= */
 
 .acoes {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+
   font-size: 16px;
   color: #6b7280;
 }
 
 .acoes svg {
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .acoes svg:hover {

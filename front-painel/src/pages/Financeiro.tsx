@@ -8,6 +8,8 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
+const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
+
 interface Cobranca {
   id: string;
   cliente_nome: string;
@@ -30,8 +32,9 @@ const Financeiro = () => {
         return;
       }
 
-      const response = await api.get("/cobrancas/");
-
+      const response = await api.get(
+  `/cobrancas/empresa/${EMPRESA_ID}`
+);
       // 🔥 Salva no cache
       cobrancasCache = response.data;
 
@@ -75,16 +78,20 @@ const Financeiro = () => {
         </div>
 
         <div className="kpi-card warning">
-          <span>Pendentes</span>
-          <strong>
-            {cobrancas.filter((c) => c.status === "pendente").length}
-          </strong>
-        </div>
+  <span>Em Aberto</span>
+  <strong>
+    {cobrancas.filter(
+      (c) => c.status?.toLowerCase() === "aberto"
+    ).length}
+  </strong>
+</div>
 
         <div className="kpi-card danger">
           <span>Pagas</span>
           <strong>
-            {cobrancas.filter((c) => c.status === "pago").length}
+            {cobrancas.filter(
+  (c) => c.status?.toLowerCase() === "pago"
+).length}
           </strong>
         </div>
       </div>
@@ -139,17 +146,21 @@ const Financeiro = () => {
                 <td>{formatarValor(cobranca.valor)}</td>
 
                 <td>
-                  <span
-                    className={`status ${
-                      cobranca.status === "pago"
-                        ? "paid"
-                        : "open"
-                    }`}
-                  >
-                    {cobranca.status === "pago"
-                      ? "Pago"
-                      : "Em aberto"}
-                  </span>
+                 <span
+  className={`status ${
+    cobranca.status?.toLowerCase() === "pago"
+      ? "paid"
+      : cobranca.status?.toLowerCase() === "cancelado"
+      ? "cancelled"
+      : "open"
+  }`}
+>
+  {cobranca.status?.toLowerCase() === "pago"
+    ? "Pago"
+    : cobranca.status?.toLowerCase() === "cancelado"
+    ? "Cancelado"
+    : "Em aberto"}
+</span>
                 </td>
 
                 <td className="actions">

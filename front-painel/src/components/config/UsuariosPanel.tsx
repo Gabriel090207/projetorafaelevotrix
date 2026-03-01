@@ -43,9 +43,11 @@ const UsuariosPanel = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch("http://localhost:8000/usuarios/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+       headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`,
+  "X-Empresa-Id": localStorage.getItem("empresa_id") || "",
+},
       });
 
       const data = await response.json();
