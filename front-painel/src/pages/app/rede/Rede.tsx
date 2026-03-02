@@ -1,4 +1,4 @@
-import "../styles/rede.css";
+import "../../../styles/rede.css";
 import {
  
   FaServer,

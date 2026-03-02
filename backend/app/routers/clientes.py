@@ -4,6 +4,10 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+
+from fastapi import Depends
+from app.core.deps import require_empresa_access
+
 import random
 
 from app.core.firebase import db
@@ -253,8 +257,10 @@ def run_sync_clientes_sgp_all_job(job_id: str, empresa_id: str, limit: int = 100
         _update_job(job_ref, status="error", message=str(e))
 
 
-@router.get("/empresa/{empresa_id}")
-def listar_clientes_empresa(empresa_id: str):
+@router.get("")
+def listar_clientes(ctx=Depends(require_empresa_access)):
+    empresa_id = ctx["empresa_id"]
+
     docs = clientes_ref(empresa_id).stream()
 
     clientes = []
@@ -265,9 +271,14 @@ def listar_clientes_empresa(empresa_id: str):
 
     return clientes
 
+@router.post("/sync/sgp/all-job")
+def start_sync_clientes_sgp_all_job(
+    background_tasks: BackgroundTasks,
+    limit: int = 50,
+    ctx=Depends(require_empresa_access)
+):
+    empresa_id = ctx["empresa_id"]
 
-@router.post("/sync/sgp/{empresa_id}/all-job")
-def start_sync_clientes_sgp_all_job(empresa_id: str, background_tasks: BackgroundTasks, limit: int = 50):
     job_ref = sync_jobs_ref(empresa_id).document()
     job_ref.set({
         "empresa_id": empresa_id,
@@ -286,4 +297,4 @@ def start_sync_clientes_sgp_all_job(empresa_id: str, background_tasks: Backgroun
 
     background_tasks.add_task(run_sync_clientes_sgp_all_job, job_ref.id, empresa_id, limit)
 
-    return {"ok": True, "job_id": job_ref.id, "status": "queued"} 
+    return {"ok": True, "job_id": job_ref.id, "status": "queued"}

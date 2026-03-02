@@ -1,4 +1,4 @@
-import "../styles/chat.css";
+import "../../../styles/chat.css";
 import { FiSearch, FiSend } from "react-icons/fi";
 import { FaRobot } from "react-icons/fa";
 

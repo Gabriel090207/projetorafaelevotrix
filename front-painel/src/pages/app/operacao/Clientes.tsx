@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import api from "../services/api";
-import Select from "../components/Select";
+import api from "../../../services/api";
+import Select from "../../../components/Select";
 
-import "../styles/clientes.css";
+import "../../../styles/clientes.css";
 import {
   FiSearch,
   FiUserPlus,

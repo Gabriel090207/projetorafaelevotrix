@@ -1,4 +1,4 @@
-import "../styles/os.css";
+import "../../../styles/os.css";
 import {  FaPlus, FaSearch } from "react-icons/fa";
 
 const OrdensServico = () => {

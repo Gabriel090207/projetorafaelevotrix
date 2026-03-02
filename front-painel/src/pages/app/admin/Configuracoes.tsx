@@ -1,14 +1,14 @@
 import { useState } from "react";
-import "../styles/config.css";
+import "../../../styles/config.css";
 
 import { FaBuilding, FaUserCog, FaPlug, FaMoneyCheckAlt, FaShieldAlt } from "react-icons/fa";
 
 // Componentes (vamos criar já já)
-import EmpresaPanel from "../components/config/EmpresaPanel";
-import IntegracoesPanel from "../components/config/IntegracoesPanel";
-import GatewaysPanel from "../components/config/GatewaysPanel";
-import UsuariosPanel from "../components/config/UsuariosPanel";
-import SegurancaPanel from "../components/config/SegurancaPanel";
+import EmpresaPanel from "../../../components/config/EmpresaPanel";
+import IntegracoesPanel from "../../../components/config/IntegracoesPanel";
+import GatewaysPanel from "../../../components/config/GatewaysPanel";
+import UsuariosPanel from "../../../components/config/UsuariosPanel";
+import SegurancaPanel from "../../../components/config/SegurancaPanel";
 
 type AbaConfig = "empresa" | "usuarios" | "integracoes" | "gateways" | "seguranca";
 

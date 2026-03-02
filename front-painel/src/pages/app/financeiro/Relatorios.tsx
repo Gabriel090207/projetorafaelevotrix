@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import api from "../../../services/api";
 
-import "../styles/relatorios.css";
+import "../../../styles/relatorios.css";
 import {
   FaUser,
   FaMoneyBillWave,
