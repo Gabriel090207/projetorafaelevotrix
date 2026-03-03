@@ -38,23 +38,22 @@ def get_empresa(user=Depends(get_current_user)):
 
     uid = user["uid"]
 
-    user_doc = db.collection("usuarios").document(uid).get()
+    empresas = db.collection("empresas").stream()
 
-    if not user_doc.exists:
-        raise HTTPException(404, "Usuário não encontrado")
+    for empresa in empresas:
 
-    empresa_id = user_doc.to_dict()["empresa_id"]
+        user_doc = empresa.reference.collection("usuarios").document(uid).get()
 
-    empresa_doc = db.collection("empresas").document(empresa_id).get()
+        if user_doc.exists:
 
-    if not empresa_doc.exists:
-        raise HTTPException(404, "Empresa não encontrada")
+            empresa_doc = empresa.reference.get()
 
-    data = empresa_doc.to_dict()
-    data["id"] = empresa_doc.id
+            data = empresa_doc.to_dict()
+            data["id"] = empresa_doc.id
 
-    return data
+            return data
 
+    raise HTTPException(404, "Empresa não encontrada")
 
 # =========================
 # ATUALIZAR EMPRESA
@@ -63,13 +62,16 @@ def get_empresa(user=Depends(get_current_user)):
 def update_empresa(dados: EmpresaUpdate, user=Depends(get_current_user)):
 
     uid = user["uid"]
-    empresas_ref = db.collection("empresas")
 
-    for empresa in empresas_ref.stream():
+    empresas = db.collection("empresas").stream()
+
+    for empresa in empresas:
+
         user_doc = empresa.reference.collection("usuarios").document(uid).get()
 
         if user_doc.exists:
-            empresa_ref = db.collection("empresas").document(empresa.id)
+
+            empresa_ref = empresa.reference
 
             update_data = {
                 "nome": dados.nome,

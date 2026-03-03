@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.core.firebase import db
 
 router = APIRouter(prefix="/contratos", tags=["Contratos"])
@@ -20,6 +20,15 @@ class ContratoCreate(BaseModel):
     data_inicio: datetime
     fidelidade_meses: int = 0
     multa_rescisao: float = 0.0
+
+    # 🔌 DADOS DE CONEXÃO
+    tipo_conexao: str
+    pppoe_usuario: Optional[str] = None
+    pppoe_senha: Optional[str] = None
+    mac_address: Optional[str] = None
+    ip_fixo: Optional[str] = None
+    onu_serial: Optional[str] = None
+    olt_porta: Optional[str] = None
 
 
 class ContratoResponse(BaseModel):
@@ -97,15 +106,43 @@ def criar_contrato(dados: ContratoCreate):
         "fidelidade_meses": dados.fidelidade_meses,
         "multa_rescisao": dados.multa_rescisao,
         "status": "ATIVO",
-        "assinatura": {
-            "assinado": False,
-            "ip_assinatura": None,
-            "data_assinatura": None
+
+        "conexao": {
+            "tipo": dados.tipo_conexao,
+            "pppoe_usuario": dados.pppoe_usuario,
+            "pppoe_senha": dados.pppoe_senha,
+            "mac_address": dados.mac_address,
+            "ip_fixo": dados.ip_fixo,
+            "onu_serial": dados.onu_serial,
+            "olt_porta": dados.olt_porta,
+            "status_online": False
         },
+
         "criado_em": datetime.utcnow()
     }
 
+    # 💾 SALVAR CONTRATO
     empresa_ref.collection("contratos").document(contrato_id).set(novo_contrato)
+
+    # =====================================================
+    # 💰 GERAR PRIMEIRA COBRANÇA AUTOMÁTICA
+    # =====================================================
+
+    cobranca_id = str(uuid4())
+
+    nova_cobranca = {
+        "id": cobranca_id,
+        "contrato_id": contrato_id,
+        "cliente_id": dados.cliente_id,
+        "cliente_nome": cliente_data.get("nome"),
+        "valor": dados.valor_mensal,
+        "vencimento": dados.data_inicio,
+        "status": "PENDENTE",
+        "tipo": "MENSALIDADE",
+        "criado_em": datetime.utcnow()
+    }
+
+    empresa_ref.collection("cobrancas").document(cobranca_id).set(nova_cobranca)
 
     return novo_contrato
 
@@ -130,28 +167,6 @@ def listar_contratos(empresa_id: str):
         contratos.append(doc.to_dict())
 
     return contratos
-
-
-# =====================================================
-# 🔎 BUSCAR CONTRATO
-# =====================================================
-
-@router.get("/{empresa_id}/{contrato_id}", response_model=ContratoResponse)
-def buscar_contrato(empresa_id: str, contrato_id: str):
-
-    contrato_ref = (
-        db.collection("empresas")
-        .document(empresa_id)
-        .collection("contratos")
-        .document(contrato_id)
-    )
-
-    contrato = contrato_ref.get()
-
-    if not contrato.exists:
-        raise HTTPException(status_code=404, detail="Contrato não encontrado")
-
-    return contrato.to_dict()
 
 
 # =====================================================

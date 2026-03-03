@@ -21,16 +21,32 @@ const Header = () => {
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const user = auth.currentUser;
+  const firebaseUser = auth.currentUser;
+
+// 🔥 tenta pegar usuário do cache
+const cachedUser = JSON.parse(localStorage.getItem("user") || "null");
+
+const user = firebaseUser || cachedUser;
 
   const displayName = useMemo(() => {
-    return user?.displayName || user?.email || "Usuário";
-  }, [user]);
+  return (
+    user?.displayName ||
+    user?.name ||
+    user?.email ||
+    "Usuário"
+  );
+}, [user]);
 
   const avatarLetter = useMemo(() => {
-    const base = (user?.displayName || user?.email || "E").trim();
-    return base[0]?.toUpperCase() || "E";
-  }, [user]);
+  const base = (
+    user?.displayName ||
+    user?.name ||
+    user?.email ||
+    "E"
+  ).trim();
+
+  return base[0]?.toUpperCase() || "E";
+}, [user]);
 
   // =============================
   // BUSCAR EMPRESA LOGADA

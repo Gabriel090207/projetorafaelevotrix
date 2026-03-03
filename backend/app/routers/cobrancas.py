@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime, timedelta
 from app.core.firebase import db
+import uuid
 
 router = APIRouter(prefix="/cobrancas", tags=["Cobranças"])
 
@@ -8,55 +9,72 @@ router = APIRouter(prefix="/cobrancas", tags=["Cobranças"])
 # ==============================
 # GERAR COBRANÇA INDIVIDUAL
 # ==============================
-@router.post("/gerar/{cliente_id}")
-def gerar_cobranca(cliente_id: str):
-    cliente_ref = db.collection("clientes").document(cliente_id).get()
+@router.post("/gerar/{empresa_id}/{cliente_id}")
+def gerar_cobranca(empresa_id: str, cliente_id: str):
+
+    empresa_ref = db.collection("empresas").document(empresa_id)
+
+    cliente_ref = (
+        empresa_ref
+        .collection("clientes")
+        .document(cliente_id)
+        .get()
+    )
 
     if not cliente_ref.exists:
         raise HTTPException(404, "Cliente não encontrado")
 
     cliente = cliente_ref.to_dict()
 
-    # Evitar cobrança duplicada no mês
     agora = datetime.utcnow()
     inicio_mes = datetime(agora.year, agora.month, 1)
 
-    docs = db.collection("cobrancas") \
-        .where("cliente_id", "==", cliente_id) \
+    docs = (
+        empresa_ref
+        .collection("cobrancas")
+        .where("cliente_id", "==", cliente_id)
         .stream()
+    )
 
     for doc in docs:
         data = doc.to_dict()
-        data_criacao = datetime.fromisoformat(data["data_criacao"])
+        criado = data["criado_em"]
 
-        if data_criacao >= inicio_mes:
+        if criado.replace(tzinfo=None) >= inicio_mes:
             raise HTTPException(
                 400,
                 "Cobrança já existe para este cliente neste mês"
             )
 
-    plano_id = cliente.get("plano_id")
-    if not plano_id:
-        raise HTTPException(400, "Cliente sem plano")
+    contrato_id = cliente.get("contrato_id")
 
-    plano_ref = db.collection("planos").document(plano_id).get()
+    if not contrato_id:
+        raise HTTPException(400, "Cliente sem contrato")
 
-    if not plano_ref.exists:
-        raise HTTPException(404, "Plano não encontrado")
+    contrato_ref = (
+        empresa_ref
+        .collection("contratos")
+        .document(contrato_id)
+        .get()
+    )
 
-    plano = plano_ref.to_dict()
+    contrato = contrato_ref.to_dict()
 
     vencimento = datetime.utcnow() + timedelta(days=30)
 
+    cobranca_id = str(uuid.uuid4())
+
     cobranca = {
+        "id": cobranca_id,
         "cliente_id": cliente_id,
         "cliente_nome": cliente["nome"],
-        "valor": plano["valor"],
-        "status": "pendente",
-        "data_criacao": datetime.utcnow().isoformat(),
-        "data_vencimento": vencimento.isoformat(),
+        "contrato_id": contrato_id,
+        "valor": contrato["valor_mensal"],
+        "status": "PENDENTE",
+        "tipo": "MENSALIDADE",
+        "criado_em": datetime.utcnow(),
+        "vencimento": vencimento,
 
-        # campos para integração bancária
         "gateway": None,
         "gateway_id": None,
         "linha_digitavel": None,
@@ -65,22 +83,28 @@ def gerar_cobranca(cliente_id: str):
         "status_gateway": None
     }
 
-    db.collection("cobrancas").add(cobranca)
+    empresa_ref.collection("cobrancas").document(cobranca_id).set(cobranca)
 
     return {"message": "Cobrança gerada"}
 
 
 # ==============================
-# LISTAR COBRANÇAS
+# LISTAR COBRANÇAS DA EMPRESA
 # ==============================
-@router.get("/")
-def listar_cobrancas():
-    docs = db.collection("cobrancas").stream()
+@router.get("/empresa/{empresa_id}")
+def listar_cobrancas_empresa(empresa_id: str):
+
+    docs = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .stream()
+    )
 
     cobrancas = []
+
     for doc in docs:
         data = doc.to_dict()
-        data["id"] = doc.id
         cobrancas.append(data)
 
     return cobrancas
@@ -89,14 +113,25 @@ def listar_cobrancas():
 # ==============================
 # MARCAR COMO PAGA
 # ==============================
-@router.put("/pagar/{cobranca_id}")
-def pagar_cobranca(cobranca_id: str):
-    ref = db.collection("cobrancas").document(cobranca_id)
+@router.put("/pagar/{empresa_id}/{cobranca_id}")
+def pagar_cobranca(empresa_id: str, cobranca_id: str):
 
-    if not ref.get().exists:
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .document(cobranca_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
         raise HTTPException(404, "Cobrança não encontrada")
 
-    ref.update({"status": "pago"})
+    ref.update({
+        "status": "PAGO",
+        "data_pagamento": datetime.utcnow()
+    })
 
     return {"message": "Cobrança marcada como paga"}
 
@@ -104,9 +139,17 @@ def pagar_cobranca(cobranca_id: str):
 # ==============================
 # GERAR COBRANÇAS MENSAIS
 # ==============================
-@router.post("/gerar-mensal")
-def gerar_cobrancas_mensais():
-    clientes_docs = db.collection("clientes").stream()
+@router.post("/gerar-mensal/{empresa_id}")
+def gerar_cobrancas_mensais(empresa_id: str):
+
+    empresa_ref = db.collection("empresas").document(empresa_id)
+
+    contratos_docs = (
+        empresa_ref
+        .collection("contratos")
+        .where("status", "==", "ATIVO")
+        .stream()
+    )
 
     geradas = 0
     ignoradas = 0
@@ -114,26 +157,26 @@ def gerar_cobrancas_mensais():
     agora = datetime.utcnow()
     inicio_mes = datetime(agora.year, agora.month, 1)
 
-    for cliente_doc in clientes_docs:
-        cliente_id = cliente_doc.id
-        cliente = cliente_doc.to_dict()
+    for contrato_doc in contratos_docs:
 
-        plano_id = cliente.get("plano_id")
-        if not plano_id:
-            ignoradas += 1
-            continue
+        contrato = contrato_doc.to_dict()
+        contrato_id = contrato["id"]
+        cliente_id = contrato["cliente_id"]
 
-        docs = db.collection("cobrancas") \
-            .where("cliente_id", "==", cliente_id) \
+        docs = (
+            empresa_ref
+            .collection("cobrancas")
+            .where("contrato_id", "==", contrato_id)
             .stream()
+        )
 
         ja_existe = False
 
         for doc in docs:
             data = doc.to_dict()
-            data_criacao = datetime.fromisoformat(data["data_criacao"])
+            criado = data["criado_em"]
 
-            if data_criacao >= inicio_mes:
+            if criado.replace(tzinfo=None) >= inicio_mes:
                 ja_existe = True
                 break
 
@@ -141,22 +184,18 @@ def gerar_cobrancas_mensais():
             ignoradas += 1
             continue
 
-        plano_ref = db.collection("planos").document(plano_id).get()
-        if not plano_ref.exists:
-            ignoradas += 1
-            continue
-
-        plano = plano_ref.to_dict()
-
-        vencimento = datetime.utcnow() + timedelta(days=30)
+        cobranca_id = str(uuid.uuid4())
 
         cobranca = {
+            "id": cobranca_id,
             "cliente_id": cliente_id,
-            "cliente_nome": cliente["nome"],
-            "valor": plano["valor"],
-            "status": "pendente",
-            "data_criacao": datetime.utcnow().isoformat(),
-            "data_vencimento": vencimento.isoformat(),
+            "cliente_nome": contrato["cliente_nome"],
+            "contrato_id": contrato_id,
+            "valor": contrato["valor_mensal"],
+            "status": "PENDENTE",
+            "tipo": "MENSALIDADE",
+            "criado_em": datetime.utcnow(),
+            "vencimento": agora + timedelta(days=30),
 
             "gateway": None,
             "gateway_id": None,
@@ -166,7 +205,8 @@ def gerar_cobrancas_mensais():
             "status_gateway": None
         }
 
-        db.collection("cobrancas").add(cobranca)
+        empresa_ref.collection("cobrancas").document(cobranca_id).set(cobranca)
+
         geradas += 1
 
     return {
@@ -178,21 +218,28 @@ def gerar_cobrancas_mensais():
 # ==============================
 # RÉGUA DE COBRANÇA
 # ==============================
-@router.get("/regua")
-def regua_cobranca():
-    docs = db.collection("cobrancas").stream()
+@router.get("/regua/{empresa_id}")
+def regua_cobranca(empresa_id: str):
+
+    docs = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .stream()
+    )
 
     agora = datetime.utcnow()
     avisos = []
 
     for doc in docs:
+
         data = doc.to_dict()
-        vencimento = datetime.fromisoformat(data["data_vencimento"])
 
-        dias_restantes = (vencimento - agora).days
-
-        if data["status"] == "pago":
+        if data["status"] == "PAGO":
             continue
+
+        vencimento = data["vencimento"]
+        dias_restantes = (vencimento.replace(tzinfo=None) - agora).days
 
         status_regua = None
 
@@ -204,19 +251,25 @@ def regua_cobranca():
             status_regua = "vence_em_breve"
 
         if status_regua:
-            data["id"] = doc.id
             data["regua_status"] = status_regua
             avisos.append(data)
 
     return avisos
 
 
-import uuid
+# ==============================
+# GERAR PIX
+# ==============================
+@router.post("/gerar-pix/{empresa_id}/{cobranca_id}")
+def gerar_pix(empresa_id: str, cobranca_id: str):
 
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .document(cobranca_id)
+    )
 
-@router.post("/gerar-pix/{cobranca_id}")
-def gerar_pix(cobranca_id: str):
-    ref = db.collection("cobrancas").document(cobranca_id)
     doc = ref.get()
 
     if not doc.exists:
@@ -227,7 +280,7 @@ def gerar_pix(cobranca_id: str):
     ref.update({
         "gateway": "PIX_TESTE",
         "pix_copia_cola": pix_code,
-        "status_gateway": "gerado"
+        "status_gateway": "GERADO"
     })
 
     return {
@@ -236,9 +289,19 @@ def gerar_pix(cobranca_id: str):
     }
 
 
-@router.post("/confirmar-pagamento/{cobranca_id}")
-def confirmar_pagamento(cobranca_id: str):
-    ref = db.collection("cobrancas").document(cobranca_id)
+# ==============================
+# CONFIRMAR PAGAMENTO
+# ==============================
+@router.post("/confirmar-pagamento/{empresa_id}/{cobranca_id}")
+def confirmar_pagamento(empresa_id: str, cobranca_id: str):
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .document(cobranca_id)
+    )
+
     doc = ref.get()
 
     if not doc.exists:
@@ -248,41 +311,51 @@ def confirmar_pagamento(cobranca_id: str):
     cliente_id = dados["cliente_id"]
 
     ref.update({
-        "status": "pago",
-        "status_gateway": "pago",
-        "data_pagamento": datetime.utcnow().isoformat()
+        "status": "PAGO",
+        "status_gateway": "PAGO",
+        "data_pagamento": datetime.utcnow()
     })
 
-    # desbloqueia cliente
-    db.collection("clientes").document(cliente_id).update({
-        "status": "ativo"
-    })
-
+    (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+        .update({"status": "ATIVO"})
+    )
 
     return {"message": "Pagamento confirmado"}
 
 
-@router.post("/bloqueio-automatico")
-def bloqueio_automatico():
-    docs = db.collection("cobrancas").stream()
+# ==============================
+# BLOQUEIO AUTOMÁTICO
+# ==============================
+@router.post("/bloqueio-automatico/{empresa_id}")
+def bloqueio_automatico(empresa_id: str):
+
+    empresa_ref = db.collection("empresas").document(empresa_id)
+
+    docs = empresa_ref.collection("cobrancas").stream()
 
     agora = datetime.utcnow()
     clientes_bloqueados = 0
 
     for doc in docs:
+
         data = doc.to_dict()
 
-        if data["status"] == "pago":
+        if data["status"] == "PAGO":
             continue
 
-        vencimento = datetime.fromisoformat(data["data_vencimento"])
-        dias_atraso = (agora - vencimento).days
+        vencimento = data["vencimento"]
+        dias_atraso = (agora - vencimento.replace(tzinfo=None)).days
 
         if dias_atraso >= 5:
+
             cliente_id = data["cliente_id"]
 
-            db.collection("clientes").document(cliente_id).update({
-                "status": "bloqueado"
+            empresa_ref.collection("clientes").document(cliente_id).update({
+                "status": "BLOQUEADO"
             })
 
             clientes_bloqueados += 1
@@ -290,22 +363,3 @@ def bloqueio_automatico():
     return {
         "clientes_bloqueados": clientes_bloqueados
     }
-
-
-
-@router.get("/empresa/{empresa_id}")
-def listar_cobrancas_empresa(empresa_id: str):
-    docs = (
-        db.collection("empresas")
-        .document(empresa_id)
-        .collection("cobrancas")
-        .stream()
-    )
-
-    cobrancas = []
-    for doc in docs:
-        data = doc.to_dict()
-        data["id"] = doc.id
-        cobrancas.append(data)
-
-    return cobrancas

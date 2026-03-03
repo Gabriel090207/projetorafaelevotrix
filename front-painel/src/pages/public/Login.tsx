@@ -51,6 +51,18 @@ const token = await result.user.getIdToken();
 
 localStorage.setItem("token", token);
 
+
+
+// 🔥 Salva usuário no cache
+localStorage.setItem(
+  "user",
+  JSON.stringify({
+    name: result.user.displayName,
+    email: result.user.email,
+    photo: result.user.photoURL
+  })
+);
+
 // 🔥 Chama backend para sincronizar usuário
 const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
   method: "POST",
