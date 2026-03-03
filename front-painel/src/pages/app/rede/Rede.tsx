@@ -1,6 +1,5 @@
 import "../../../styles/rede.css";
 import {
- 
   FaServer,
   FaWifi,
   FaMicrochip,
@@ -9,11 +8,13 @@ import {
 const Rede = () => {
   return (
     <div className="rede-page">
+
+      {/* HEADER */}
       <div className="rede-header">
         <h1>Rede</h1>
       </div>
 
-      {/* CARDS DE STATUS */}
+      {/* CARDS */}
       <div className="rede-cards">
         <div className="rede-card primary">
           <FaWifi />
@@ -48,30 +49,40 @@ const Rede = () => {
         </div>
       </div>
 
-      {/* TABELA FUTURA DE DISPOSITIVOS */}
+      {/* 🔥 TÍTULO FORA DO CARD */}
+      <div className="rede-section-title">
+        <h2>Dispositivos Monitorados</h2>
+      </div>
+
+      {/* TABELA */}
       <div className="rede-table-wrapper">
-        <h3>Dispositivos Monitorados</h3>
         <table className="rede-table">
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Tipo</th>
-              <th>Status</th>
+              <th>NOME</th>
+              <th>TIPO</th>
+              <th>STATUS</th>
               <th>CPU</th>
-              <th>Memória</th>
+              <th>MEMÓRIA</th>
             </tr>
           </thead>
+
           <tbody>
             <tr>
               <td>Mikrotik Principal</td>
               <td>Router</td>
-              <td>Online</td>
+              <td>
+                <span className="rede-status online">
+                  Online
+                </span>
+              </td>
               <td>34%</td>
               <td>62%</td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };

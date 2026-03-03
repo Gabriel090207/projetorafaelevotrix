@@ -1,0 +1,98 @@
+/* HEADER */
+
+.seguranca-panel .panel-header {
+  margin-bottom: 28px;
+}
+
+.seguranca-panel .panel-header h2 {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.seguranca-panel .panel-header p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* GRID */
+
+.seguranca-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+/* CARD */
+
+.seguranca-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  display: flex;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+  font-size: 22px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.seguranca-card h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.seguranca-card p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+/* BLOCO INFERIOR */
+
+.seguranca-box {
+  margin-top: 40px;
+  background: #fff;
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.seguranca-box h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.seguranca-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.seguranca-item:last-child {
+  border-bottom: none;
+}
+
+/* STATUS */
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.success {
+  background: #d1fae5;
+  color: #065f46;
+}

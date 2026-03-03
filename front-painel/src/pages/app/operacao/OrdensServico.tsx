@@ -1,62 +1,127 @@
-import "../../../styles/os.css";
-import {  FaPlus, FaSearch } from "react-icons/fa";
+import "../../../styles/rede.css";
+import {
+  FaNetworkWired,
+  FaServer,
+  FaExclamationTriangle,
+  FaCheckCircle,
+} from "react-icons/fa";
 
-const OrdensServico = () => {
+const dispositivosMock = [
+  {
+    id: 1,
+    nome: "Mikrotik Principal",
+    tipo: "Router",
+    status: "online",
+    cpu: "34%",
+    memoria: "62%",
+  },
+];
+
+const Rede = () => {
   return (
-    <div className="os-page">
-      <div className="os-header">
-        <h1>Ordens de Serviço</h1>
+    <div className="rede-page">
 
-        <button className="btn-primary">
-          <FaPlus />
-          Nova Ordem
-        </button>
+      {/* HEADER */}
+      <div className="rede-header">
+        <h1>Dispositivos Monitorados</h1>
       </div>
 
-      <div className="os-filters">
-        <div className="filter-group">
-          <label>Status</label>
-          <select>
-            <option>Todas</option>
-            <option>Aberta</option>
-            <option>Em andamento</option>
-            <option>Concluída</option>
-          </select>
+      {/* CARDS KPI */}
+      <div className="rede-cards">
+        <div className="rede-card primary">
+          <FaNetworkWired />
+          <div>
+            <span>Total Dispositivos</span>
+            <strong>{dispositivosMock.length}</strong>
+          </div>
         </div>
 
-        <div className="filter-group search">
-          <label>Buscar</label>
-          <div className="search-input">
-            <FaSearch />
-            <input placeholder="Cliente ou protocolo" />
+        <div className="rede-card success">
+          <FaCheckCircle />
+          <div>
+            <span>Online</span>
+            <strong>
+              {
+                dispositivosMock.filter((d) => d.status === "online")
+                  .length
+              }
+            </strong>
+          </div>
+        </div>
+
+        <div className="rede-card danger">
+          <FaExclamationTriangle />
+          <div>
+            <span>Offline</span>
+            <strong>
+              {
+                dispositivosMock.filter((d) => d.status === "offline")
+                  .length
+              }
+            </strong>
+          </div>
+        </div>
+
+        <div className="rede-card warning">
+          <FaServer />
+          <div>
+            <span>Alertas</span>
+            <strong>0</strong>
           </div>
         </div>
       </div>
 
-      <div className="os-table-wrapper">
-        <table className="os-table">
+      {/* TABELA */}
+      <div className="rede-table-wrapper">
+        <table className="rede-table">
           <thead>
             <tr>
-              <th>Protocolo</th>
-              <th>Cliente</th>
-              <th>Técnico</th>
-              <th>Status</th>
-              <th>Data</th>
+              <th>NOME</th>
+              <th>TIPO</th>
+              <th>STATUS</th>
+              <th>CPU</th>
+              <th>MEMÓRIA</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr>
-              <td>SUP-00123</td>
-              <td>Carlos Souza</td>
-              <td>João Técnico</td>
-              <td>Aberta</td>
-              <td>19/02/2026</td>
-            </tr>
+            {dispositivosMock.map((dispositivo) => (
+              <tr key={dispositivo.id}>
+                <td>{dispositivo.nome}</td>
+                <td>{dispositivo.tipo}</td>
+
+                <td>
+                  <span
+                    className={`rede-status ${
+                      dispositivo.status === "online"
+                        ? "online"
+                        : "offline"
+                    }`}
+                  >
+                    {dispositivo.status === "online"
+                      ? "Online"
+                      : "Offline"}
+                  </span>
+                </td>
+
+                <td>{dispositivo.cpu}</td>
+                <td>{dispositivo.memoria}</td>
+              </tr>
+            ))}
+
+            {dispositivosMock.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: 16, opacity: 0.7 }}>
+                  Nenhum dispositivo encontrado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };
 
-export default OrdensServico;
+export default Rede;

@@ -11,10 +11,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const Header = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [empresaNome, setEmpresaNome] = useState("Carregando...");
 
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -25,23 +27,43 @@ const Header = () => {
     return user?.displayName || user?.email || "Usuário";
   }, [user]);
 
-  const roleLabel = useMemo(() => {
-    // se quiser, depois a gente puxa isso do Firestore (empresa/usuarios/{uid})
-    return "Administrador";
-  }, []);
-
   const avatarLetter = useMemo(() => {
     const base = (user?.displayName || user?.email || "E").trim();
     return base[0]?.toUpperCase() || "E";
   }, [user]);
 
-  // aplica tema no body
+  // =============================
+  // BUSCAR EMPRESA LOGADA
+  // =============================
+  useEffect(() => {
+    async function carregarUsuario() {
+      try {
+        const response = await api.get("/auth/me");
+
+        setEmpresaNome(response.data.empresa_nome);
+
+        localStorage.setItem("empresa_id", response.data.empresa_id);
+        localStorage.setItem("perfil", response.data.perfil);
+      } catch (error) {
+        console.error("Erro ao buscar usuário:", error);
+        setEmpresaNome("Empresa");
+      }
+    }
+
+    carregarUsuario();
+  }, []);
+
+  // =============================
+  // DARK MODE
+  // =============================
   useEffect(() => {
     if (darkMode) document.body.classList.add("dark");
     else document.body.classList.remove("dark");
   }, [darkMode]);
 
-  // fecha o menu clicando fora
+  // =============================
+  // FECHAR MENU CLICANDO FORA
+  // =============================
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
       if (!menuOpen) return;
@@ -55,7 +77,9 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [menuOpen]);
 
-  // fullscreen real
+  // =============================
+  // FULLSCREEN
+  // =============================
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -64,14 +88,17 @@ const Header = () => {
     }
   };
 
+  // =============================
+  // LOGOUT
+  // =============================
   const handleLogout = async () => {
     try {
       setMenuOpen(false);
       await signOut(auth);
 
-      // garante limpeza local (onIdTokenChanged também limpa)
       localStorage.removeItem("token");
       localStorage.removeItem("empresa_id");
+      localStorage.removeItem("perfil");
 
       navigate("/", { replace: true });
     } catch (e) {
@@ -82,12 +109,11 @@ const Header = () => {
 
   return (
     <header className="header">
-      {/* TÍTULO */}
-      <h1 className="header-title">Dashboard</h1>
+      {/* EMPRESA */}
+      <h1 className="header-title">{empresaNome}</h1>
 
       {/* AÇÕES */}
       <div className="header-actions">
-        {/* TEMA */}
         <button
           className="header-icon"
           title="Alternar tema"
@@ -96,7 +122,6 @@ const Header = () => {
           {darkMode ? <FiSun /> : <FiMoon />}
         </button>
 
-        {/* FULLSCREEN */}
         <button
           className="header-icon"
           title="Tela cheia"
@@ -105,25 +130,23 @@ const Header = () => {
           <FiMaximize />
         </button>
 
-        {/* NOTIFICAÇÕES */}
         <button className="header-icon notification" title="Notificações">
           <FiBell />
           <span className="notification-dot" />
         </button>
 
-        {/* PERFIL + MENU */}
+        {/* PERFIL */}
         <div className="header-profile-wrap" ref={menuRef}>
           <button
             className="header-profile"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            title="Abrir menu do usuário"
           >
             <div className="profile-avatar">{avatarLetter}</div>
 
             <div className="profile-info">
               <strong className="profile-name">{displayName}</strong>
-              <span>{roleLabel}</span>
+              <span>Administrador</span>
             </div>
 
             <FiChevronDown className={`chevron ${menuOpen ? "open" : ""}`} />

@@ -92,7 +92,6 @@ def sync_user(user=Depends(get_current_user)):
 def get_me(user=Depends(get_current_user)):
 
     uid = user["uid"]
-
     empresas_ref = db.collection("empresas")
 
     for empresa in empresas_ref.stream():
@@ -101,11 +100,15 @@ def get_me(user=Depends(get_current_user)):
         if user_doc.exists:
             data = user_doc.to_dict()
 
+            empresa_data = empresa.to_dict()
+
             return {
                 "uid": uid,
                 "email": user.get("email"),
                 "empresa_id": empresa.id,
+                "empresa_nome": empresa_data.get("nome"),
                 "perfil": data.get("perfil", "usuario")
             }
 
     raise HTTPException(404, "Usuário não encontrado")
+

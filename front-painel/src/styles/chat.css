@@ -13,7 +13,7 @@
 ========================= */
 
 .chat-list {
-  width: 320px;
+  width: 340px;
   border-right: 1px solid var(--border);
   background: var(--bg-header);
 
@@ -21,8 +21,13 @@
   flex-direction: column;
 }
 
+/* Remove espaçamento externo do layout */
+.chat-container {
+  margin: -25px !important;
+  height: calc(100vh - 60px);
+}
 .chat-list-header {
-  padding: 16px;
+  padding: 19px;
   border-bottom: 1px solid var(--border);
 }
 

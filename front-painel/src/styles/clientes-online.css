@@ -1,0 +1,49 @@
+/* ==================================
+   CLIENTES ONLINE - NOC
+================================== */
+
+.online-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.online-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.online-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.online-table-wrapper {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.online-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.online-table th,
+.online-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.online-table th {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.online-table tbody tr:hover {
+  background: #f9fafb;
+}

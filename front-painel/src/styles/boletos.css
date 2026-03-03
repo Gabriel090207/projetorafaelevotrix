@@ -1,0 +1,96 @@
+/* ==================================
+   BOLETOS & PIX - PADRÃO SISTEMA
+================================== */
+
+.boletos-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* HEADER */
+.boletos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.boletos-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* FILTROS */
+.boletos-filters {
+  display: grid;
+  grid-template-columns: 200px 200px 1fr;
+  gap: 16px;
+
+  background: white;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* SEARCH */
+.search-input {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  gap: 10px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.search-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.search-input svg {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* TABELA */
+.boletos-table-wrapper {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.boletos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.boletos-table th,
+.boletos-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.boletos-table th {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.boletos-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+  .boletos-filters {
+    grid-template-columns: 1fr;
+  }
+}

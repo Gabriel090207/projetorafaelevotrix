@@ -76,7 +76,7 @@ const Sidebar = () => {
         icon: <FaBoxOpen />,
         items: [
           { to: "/planos", label: "Planos", icon: <FaMoneyBillWave /> },
-          { to: "/produtos", label: "Comodato", icon: <FaBoxOpen /> },
+          { to: "/comodato", label: "Comodato", icon: <FaBoxOpen /> },
         ],
       },
       

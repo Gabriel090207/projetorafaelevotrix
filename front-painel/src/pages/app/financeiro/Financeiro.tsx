@@ -72,7 +72,7 @@ const Financeiro = () => {
       </div>
 
       <div className="financeiro-kpis">
-        <div className="kpi-card">
+        <div className="kpi-card primary">
           <span>Total cobranças</span>
           <strong>{cobrancas.length}</strong>
         </div>
@@ -138,37 +138,52 @@ const Financeiro = () => {
             </tr>
           </thead>
 
-          <tbody>
-            {cobrancas.map((cobranca) => (
-              <tr key={cobranca.id}>
-                <td>{cobranca.cliente_nome}</td>
-                <td>{formatarData(cobranca.data_vencimento)}</td>
-                <td>{formatarValor(cobranca.valor)}</td>
+         <tbody>
+  {cobrancas.map((cobranca) => (
+    <tr key={cobranca.id}>
+      <td>{cobranca.cliente_nome}</td>
+      <td>{formatarData(cobranca.data_vencimento)}</td>
+      <td>{formatarValor(cobranca.valor)}</td>
 
-                <td>
-                 <span
-  className={`status ${
-    cobranca.status?.toLowerCase() === "pago"
-      ? "paid"
-      : cobranca.status?.toLowerCase() === "cancelado"
-      ? "cancelled"
-      : "open"
-  }`}
->
-  {cobranca.status?.toLowerCase() === "pago"
-    ? "Pago"
-    : cobranca.status?.toLowerCase() === "cancelado"
-    ? "Cancelado"
-    : "Em aberto"}
-</span>
-                </td>
+      <td>
+        <span
+          className={`status ${
+            cobranca.status?.toLowerCase() === "pago"
+              ? "paid"
+              : cobranca.status?.toLowerCase() === "cancelado"
+              ? "cancelled"
+              : "open"
+          }`}
+        >
+          {cobranca.status?.toLowerCase() === "pago"
+            ? "Pago"
+            : cobranca.status?.toLowerCase() === "cancelado"
+            ? "Cancelado"
+            : "Em aberto"}
+        </span>
+      </td>
 
-                <td className="actions">
-                  <FaMoneyBillWave />
-                </td>
-              </tr>
-            ))}
-          </tbody>
+      <td className="actions">
+        <FaMoneyBillWave />
+      </td>
+    </tr>
+  ))}
+
+{cobrancas.length === 0 && (
+  <tr>
+    <td
+      colSpan={5}
+      style={{
+        padding: "16px 14px",
+        opacity: 0.7,
+        fontSize: "14px"
+      }}
+    >
+      Nenhuma cobrança encontrada.
+    </td>
+  </tr>
+)}
+</tbody>
         </table>
       </div>
     </div>

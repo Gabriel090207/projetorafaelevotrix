@@ -34,6 +34,14 @@ class Cliente(BaseModel):
     conexao_status: Optional[str] = "offline"
 
 
+class ClienteCreateManual(BaseModel):
+    nome: str
+    documento: str
+    telefone: Optional[str] = None
+    email: Optional[str] = None
+    endereco: Optional[str] = None
+    plano_id: Optional[str] = None
+
 class SyncClientesSgpInput(BaseModel):
     cpfs: List[str]
 
@@ -256,6 +264,46 @@ def run_sync_clientes_sgp_all_job(job_id: str, empresa_id: str, limit: int = 100
     except Exception as e:
         _update_job(job_ref, status="error", message=str(e))
 
+
+
+@router.post("")
+def criar_cliente_manual(
+    dados: ClienteCreateManual,
+    ctx=Depends(require_empresa_access)
+):
+    empresa_id = ctx["empresa_id"]
+
+    documento = only_digits(dados.documento)
+
+    if not documento:
+        raise HTTPException(status_code=400, detail="Documento inválido")
+
+    ref = clientes_ref(empresa_id).document(documento)
+    doc = ref.get()
+
+    if doc.exists:
+        raise HTTPException(status_code=400, detail="Cliente já existe")
+
+    novo_cliente = {
+        "nome": dados.nome,
+        "documento": documento,
+        "telefone": dados.telefone or "",
+        "email": dados.email or "",
+        "endereco": dados.endereco or "",
+        "plano_id": dados.plano_id,
+        "conexao_status": "offline",
+        "origem": "manual",
+        "empresa_id": empresa_id,
+        "criado_em": _now()
+    }
+
+    ref.set(novo_cliente)
+
+    return {
+        "ok": True,
+        "message": "Cliente criado com sucesso",
+        "id": documento
+    }
 
 @router.get("")
 def listar_clientes(ctx=Depends(require_empresa_access)):

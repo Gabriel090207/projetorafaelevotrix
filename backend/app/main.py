@@ -1,54 +1,92 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.firebase import db
 
-
-from app.routers import auth
-from app.routers import clientes
-from app.routers import planos
-from app.routers import cobrancas
-from app.routers import monitoramento
-from app.routers import bot
-from app.routers import test
-from app.routers import empresas
-from app.routers import usuarios
-
-
-from app.routers import mk
-from app.routers import integracoes
-from app.routers import webhooks
-from app.routers import sync
-from app.routers import receitanet
-
+# =====================================================
+# 🚀 CRIAÇÃO DA APLICAÇÃO
+# =====================================================
 
 app = FastAPI(title="Projeto Evotrix API")
 
-from fastapi.middleware.cors import CORSMiddleware
+# =====================================================
+# 🔐 CORS
+# =====================================================
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# =====================================================
+# 📦 IMPORTAÇÃO DOS ROUTERS
+# =====================================================
 
+# 🔓 Público
+from app.routers import auth
+from app.routers import test
+
+# 🏢 Operação
+from app.routers import clientes
+from app.routers import contratos
+from app.routers import bot
+
+# 💰 Financeiro
+from app.routers import cobrancas
+from app.routers import receitanet
+
+# 🌐 Rede
+from app.routers import monitoramento
+from app.routers import mk
+from app.routers import integracoes
+
+# 📦 Produtos
+from app.routers import planos
+
+# ⚙ Administração
+from app.routers import empresas
+from app.routers import usuarios
+from app.routers import webhooks
+from app.routers import sync
+
+
+# =====================================================
+# 🔗 REGISTRO DOS ROUTERS
+# =====================================================
+
+# 🔓 Público
 app.include_router(auth.router)
+app.include_router(test.router)
+
+# 🏢 Operação
 app.include_router(clientes.router)
-app.include_router(planos.router)
-app.include_router(cobrancas.router)
-app.include_router(monitoramento.router)
+app.include_router(contratos.router)
 app.include_router(bot.router)
 
+# 💰 Financeiro
+app.include_router(cobrancas.router)
+app.include_router(receitanet.router)
 
+# 🌐 Rede
+app.include_router(monitoramento.router)
 app.include_router(mk.router)
 app.include_router(integracoes.router)
-app.include_router(webhooks.router)
-app.include_router(sync.router)
-app.include_router(receitanet.router)
-app.include_router(test.router)
+
+# 📦 Produtos
+app.include_router(planos.router)
+
+# ⚙ Administração
 app.include_router(empresas.router)
 app.include_router(usuarios.router)
+app.include_router(webhooks.router)
+app.include_router(sync.router)
+
+
+# =====================================================
+# 🧪 ROTAS BASE
+# =====================================================
 
 @app.get("/")
 def root():

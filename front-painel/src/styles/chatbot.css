@@ -1,0 +1,92 @@
+/* ==================================
+   CHATBOT
+================================== */
+
+.chatbot-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chatbot-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* STATUS */
+
+.chatbot-status-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatbot-status-card span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.chatbot-status-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.status-offline {
+  color: #b91c1c;
+}
+
+.status-online {
+  color: #166534;
+}
+
+/* CONFIG */
+
+.chatbot-config-card {
+  background: white;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.chatbot-config-card h3 {
+  margin-bottom: 20px;
+}
+
+.chatbot-form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.save-btn {
+  margin-top: 20px;
+}

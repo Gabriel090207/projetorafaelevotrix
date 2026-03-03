@@ -1,0 +1,102 @@
+/* ==================================
+   RÉGUA DE COBRANÇA - PADRÃO SISTEMA
+================================== */
+
+.regua-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* HEADER */
+.regua-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.regua-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* CARDS */
+.regua-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.regua-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.regua-card svg {
+  font-size: 22px;
+}
+
+.regua-card span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.regua-card strong {
+  font-size: 22px;
+  font-weight: 800;
+  display: block;
+}
+
+.regua-card.primary {
+  background: linear-gradient(135deg, #0f766e, #042f2e);
+}
+
+.regua-card.warning {
+  background: linear-gradient(135deg, #78350f, #451a03);
+}
+
+.regua-card.danger {
+  background: linear-gradient(135deg, #7f1d1d, #450a0a);
+}
+
+/* TABELA */
+.regua-table-wrapper {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.regua-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.regua-table th,
+.regua-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.regua-table th {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.regua-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+  .regua-kpis {
+    grid-template-columns: 1fr;
+  }
+}

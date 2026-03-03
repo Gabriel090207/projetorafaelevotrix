@@ -5,17 +5,58 @@ import {
   FaBars,
   FaEdit,
   FaTrash,
+  FaWifi,
+  FaNetworkWired,
+  FaFileInvoice,
 } from "react-icons/fa";
 
 type Integracao = {
   id: string;
   nome: string;
   descricao: string;
+  categoria: "rede" | "fiscal";
   icon: React.ReactNode;
 };
 
 const integracoesDisponiveis: Integracao[] = [
-  { id: "sgp", nome: "SGP", descricao: "Integração com SGP", icon: <FaServer /> },
+  // 🔹 REDE
+  {
+    id: "sgp",
+    nome: "SGP",
+    descricao: "Integração com sistema SGP",
+    categoria: "rede",
+    icon: <FaServer />,
+  },
+  {
+    id: "mikrotik",
+    nome: "Mikrotik",
+    descricao: "Integração via API, VPN ou RADIUS",
+    categoria: "rede",
+    icon: <FaWifi />,
+  },
+  {
+    id: "accell_ppp",
+    nome: "Accell-PPP",
+    descricao: "Integração via RADIUS",
+    categoria: "rede",
+    icon: <FaNetworkWired />,
+  },
+  {
+    id: "olt",
+    nome: "OLT",
+    descricao: "Monitoramento e provisionamento",
+    categoria: "rede",
+    icon: <FaNetworkWired />,
+  },
+
+  // 🔹 FISCAL
+  {
+    id: "nfcom",
+    nome: "NFCOM",
+    descricao: "Emissão de Nota Fiscal",
+    categoria: "fiscal",
+    icon: <FaFileInvoice />,
+  },
 ];
 
 type IntegracaoSalva = {
@@ -111,7 +152,7 @@ const IntegracoesPanel = () => {
         <p>Configure as integrações do provedor.</p>
       </div>
 
-      {/* DISPONÍVEIS */}
+      {/* GRID DISPONÍVEIS */}
       <div className="integracoes-grid">
         {integracoesDisponiveis.map((item) => (
           <button
@@ -120,7 +161,7 @@ const IntegracoesPanel = () => {
             onClick={() => setSelecionada(item)}
           >
             <div className="integracao-icon">{item.icon}</div>
-            <div>
+            <div className="integracao-text">
               <h3>{item.nome}</h3>
               <p>{item.descricao}</p>
             </div>
@@ -162,6 +203,21 @@ const IntegracoesPanel = () => {
                 </td>
               </tr>
             ))}
+
+            {integracoes.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  style={{
+                    padding: "16px 20px",
+                    opacity: 0.7,
+                    fontSize: "14px",
+                  }}
+                >
+                  Nenhuma integração encontrada.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -188,13 +244,13 @@ const IntegracoesPanel = () => {
                 onChange={(e) => setBaseUrl(e.target.value)}
               />
 
-              <label>App</label>
+              <label>Usuário / App</label>
               <input
                 value={appKey}
                 onChange={(e) => setAppKey(e.target.value)}
               />
 
-              <label>Token</label>
+              <label>Token / Senha</label>
               <input
                 type="password"
                 value={tokenSgp}
