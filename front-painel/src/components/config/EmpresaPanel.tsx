@@ -37,7 +37,7 @@ const EmpresaPanel = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8000/empresas/me", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/empresas/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -141,7 +141,7 @@ const EmpresaPanel = () => {
       setSalvando(true);
       const token = localStorage.getItem("token");
 
-      await fetch("http://localhost:8000/empresas/me", {
+      await fetch(`${import.meta.env.VITE_API_URL}/empresas/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

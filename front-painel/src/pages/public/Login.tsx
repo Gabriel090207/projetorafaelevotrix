@@ -52,7 +52,7 @@ const token = await result.user.getIdToken();
 localStorage.setItem("token", token);
 
 // 🔥 Chama backend para sincronizar usuário
-const response = await fetch("http://localhost:8000/auth/sync-user", {
+const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
   method: "POST",
   headers: {
     "Authorization": `Bearer ${token}`

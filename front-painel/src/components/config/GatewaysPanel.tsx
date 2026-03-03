@@ -75,7 +75,7 @@ const GatewaysPanel = () => {
     const token = localStorage.getItem("token");
 
     const response = await fetch(
-      `http://localhost:8000/gateways/${empresaId}`,
+  `${import.meta.env.VITE_API_URL}/gateways/${empresaId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -118,7 +118,7 @@ const GatewaysPanel = () => {
         ativo: true,
       };
 
-      const response = await fetch("http://localhost:8000/gateways/", {
+     const response = await fetch(`${import.meta.env.VITE_API_URL}/gateways/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

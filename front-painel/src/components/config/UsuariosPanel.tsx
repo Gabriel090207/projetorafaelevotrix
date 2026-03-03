@@ -42,7 +42,7 @@ const UsuariosPanel = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8000/usuarios/", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/`, {
        headers: {
   "Content-Type": "application/json",
   Authorization: `Bearer ${token}`,
@@ -70,7 +70,7 @@ const UsuariosPanel = () => {
       setSalvando(true);
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:8000/usuarios/", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

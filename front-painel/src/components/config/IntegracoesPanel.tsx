@@ -84,8 +84,8 @@ const IntegracoesPanel = () => {
       const empresaId = localStorage.getItem("empresa_id");
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `http://localhost:8000/integracoes/${empresaId}`,
+    const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/integracoes/${empresaId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -118,7 +118,7 @@ const IntegracoesPanel = () => {
         ativo: true,
       };
 
-      const response = await fetch("http://localhost:8000/integracoes/", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/integracoes/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
