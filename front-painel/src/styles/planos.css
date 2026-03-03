@@ -1,72 +1,29 @@
 .planos-page {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
+
+/* HEADER */
 
 .planos-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  align-items: center;
 }
 
-.planos-header h2 {
-  margin: 0;
-  font-size: 22px;
-  color: #111827;
+.planos-header h1 {
+  font-size: 24px;
+  font-weight: 600;
 }
 
-.planos-header p {
-  margin: 6px 0 0 0;
-  color: #6b7280;
-  font-size: 14px;
-}
+/* TABELA */
 
-.planos-btn-primary {
-  background: #b91c1c;
-  color: #fff;
-  border: 0;
-  padding: 10px 14px;
+.planos-table-wrapper {
+  background: white;
   border-radius: 12px;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.planos-btn-primary:hover {
-  filter: brightness(0.95);
-}
-
-.planos-alert {
-  margin-top: 14px;
-  padding: 12px;
-  border-radius: 12px;
-  background: #fee2e2;
-  color: #991b1b;
-  font-weight: 700;
-}
-
-.planos-card {
-  margin-top: 14px;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
   overflow: hidden;
-}
-
-.planos-card-title {
-  padding: 14px;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 800;
-  color: #111827;
-}
-
-.planos-empty {
-  padding: 14px;
-  color: #6b7280;
-}
-
-.planos-table-wrap {
-  width: 100%;
-  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .planos-table {
@@ -74,123 +31,166 @@
   border-collapse: collapse;
 }
 
-.planos-table thead tr {
-  background: #f9fafb;
+.planos-table th,
+.planos-table td {
+  padding: 14px;
   text-align: left;
 }
 
-.planos-table th {
-  padding: 12px;
+.planos-table thead tr {
   border-bottom: 1px solid #e5e7eb;
-  color: #374151;
-  font-size: 13px;
 }
 
-.planos-table td {
-  padding: 12px;
-  border-bottom: 1px solid #f3f4f6;
-  color: #111827;
-  font-size: 14px;
+.planos-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.td-strong {
-  font-weight: 700;
+.planos-table tbody tr:last-child {
+  border-bottom: none;
 }
 
-.td-actions {
-  white-space: nowrap;
+.planos-table th {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
 }
 
-.planos-btn {
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  padding: 8px 10px;
-  border-radius: 10px;
+.planos-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+/* AÇÕES */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.actions svg {
   cursor: pointer;
-  font-weight: 700;
-  margin-right: 8px;
+  transition: 0.2s ease;
 }
 
-.planos-btn:hover {
-  background: #f9fafb;
+.actions svg:hover {
+  color: #111827;
 }
 
-.planos-btn.danger {
-  border: 1px solid #fecaca;
-  background: #fff1f2;
-  color: #991b1b;
-}
+/* ================= MODAL ================= */
 
-.planos-btn.danger:hover {
-  filter: brightness(0.98);
-}
-
-/* MODAL */
-.planos-modal-overlay {
+.modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(17, 24, 39, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  z-index: 9999;
+  z-index: 999;
+  backdrop-filter: blur(4px);
 }
 
-.planos-modal {
+.modal {
   width: 100%;
   max-width: 520px;
-  background: #fff;
-  border-radius: 18px;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  animation: modalFade 0.2s ease;
 }
 
-.planos-modal-title {
-  padding: 14px;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 900;
+@keyframes modalFade {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-close {
+  cursor: pointer;
+  font-size: 20px;
+  color: #6b7280;
+}
+
+.modal-close:hover {
   color: #111827;
 }
 
-.planos-modal-body {
-  padding: 14px;
-  display: grid;
-  gap: 12px;
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.planos-field {
+.grid-2 {
   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.planos-field label {
-  font-weight: 800;
-  color: #111827;
+.form-group label {
   font-size: 13px;
+  color: #6b7280;
 }
 
-.planos-field input {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+.form-group input {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.form-group input:focus {
   outline: none;
-}
-
-.planos-field input:focus {
   border-color: #b91c1c;
 }
 
-.planos-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.planos-modal-actions {
-  padding: 14px;
-  border-top: 1px solid #e5e7eb;
+.modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+}
+
+.modal-error {
+  color: #b91c1c;
+  font-size: 13px;
 }

@@ -298,3 +298,91 @@ def start_sync_clientes_sgp_all_job(
     background_tasks.add_task(run_sync_clientes_sgp_all_job, job_ref.id, empresa_id, limit)
 
     return {"ok": True, "job_id": job_ref.id, "status": "queued"}
+
+
+
+@router.get("/{cliente_id}")
+def obter_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
+    empresa_id = ctx["empresa_id"]
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    data = doc.to_dict() or {}
+    data["id"] = doc.id
+
+    return data
+
+@router.post("/{cliente_id}/bloquear")
+def bloquear_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
+    empresa_id = ctx["empresa_id"]
+
+    ref = clientes_ref(empresa_id).document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    cliente = doc.to_dict()
+    sgp_cliente_id = cliente.get("sgp_cliente_id")
+
+    if not sgp_cliente_id:
+        raise HTTPException(status_code=400, detail="Cliente não vinculado ao SGP")
+
+    sgp = SGPAuth(empresa_id)
+
+    # 🔥 Aqui você precisa usar o método correto do seu SGP
+    response = sgp.bloquear_cliente(sgp_cliente_id)
+
+    if not response.get("ok"):
+        raise HTTPException(status_code=400, detail=response.get("erro"))
+
+    # Atualiza status local
+    ref.update({
+        "conexao_status": "offline",
+        "sgp_status_raw": "BLOQUEADO",
+        "sincronizado_em": _now()
+    })
+
+    return {"ok": True, "status": "bloqueado"}
+
+
+@router.post("/{cliente_id}/desbloquear")
+def desbloquear_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
+    empresa_id = ctx["empresa_id"]
+
+    ref = clientes_ref(empresa_id).document(cliente_id)
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    cliente = doc.to_dict()
+    sgp_cliente_id = cliente.get("sgp_cliente_id")
+
+    if not sgp_cliente_id:
+        raise HTTPException(status_code=400, detail="Cliente não vinculado ao SGP")
+
+    sgp = SGPAuth(empresa_id)
+
+    response = sgp.desbloquear_cliente(sgp_cliente_id)
+
+    if not response.get("ok"):
+        raise HTTPException(status_code=400, detail=response.get("erro"))
+
+    ref.update({
+        "conexao_status": "online",
+        "sgp_status_raw": "LIBERADO",
+        "sincronizado_em": _now()
+    })
+
+    return {"ok": True, "status": "liberado"}

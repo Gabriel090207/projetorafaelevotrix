@@ -79,7 +79,7 @@ const Dashboard = () => {
 
 const [clientesRes, cobrancasRes] = await Promise.all([
   api.get(`/clientes`),
-  api.get(`/cobrancas`),
+  api.get(`/cobrancas/empresa/${localStorage.getItem("empresa_id")}`),
 ]);
 
 let botRes = { data: null };
