@@ -1,5 +1,5 @@
 import "../../../styles/chatbot.css";
-import { FaPlug, FaRobot, FaSave } from "react-icons/fa";
+import { FaPlug, FaSave } from "react-icons/fa";
 
 const Chatbot = () => {
   return (
