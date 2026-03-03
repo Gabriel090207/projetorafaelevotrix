@@ -470,6 +470,12 @@ async function carregarWifiStatus() {
 </div>
 
       <div className="financeiro-card">
+
+        {loadingWifi && (
+  <div style={{ marginBottom: 12 }}>
+    <small>Atualizando status...</small>
+  </div>
+)}
         <table className="financeiro-table">
           <thead>
             <tr>
