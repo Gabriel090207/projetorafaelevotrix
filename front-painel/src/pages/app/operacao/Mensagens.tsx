@@ -33,7 +33,7 @@ const Mensagens = () => {
         <div className="chat-header">
           <div>
             <strong>João da Silva</strong>
-            <span>Atendimento via WhatsApp</span>
+           
           </div>
 
           <FaRobot className="bot-icon" title="Chatbot ativo" />
