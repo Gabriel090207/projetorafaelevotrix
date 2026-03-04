@@ -80,11 +80,118 @@
 
 /* MAPA */
 
+/* ==================================
+   MAPA FTTH
+================================== */
+
+.ftth-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* HEADER */
+
+.ftth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ftth-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* CARDS */
+
+.ftth-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.ftth-card {
+  padding: 24px;
+  border-radius: 18px;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* força vertical alinhado à esquerda */
+  justify-content: center;
+
+  min-height: 110px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.ftth-card:hover {
+  transform: translateY(-2px);
+}
+
+.ftth-card span {
+  font-size: 13px;
+
+  opacity: 0.9;
+  display: block;      /* força quebra */
+}
+
+.ftth-card strong {
+  font-size: 28px;
+
+  margin-top: 6px;
+  display: block;      /* força quebra */
+}
+/* Gradientes padrão sistema */
+
+.ftth-card.primary {
+  background: linear-gradient(135deg, #0f766e, #042f2e);
+}
+
+.ftth-card.success {
+  background: linear-gradient(135deg, #14532d, #052e16);
+}
+
+.ftth-card.warning {
+  background: linear-gradient(135deg, #78350f, #451a03);
+}
+
+.ftth-card.danger {
+  background: linear-gradient(135deg, #7f1d1d, #450a0a);
+}
+
+/* MAPA */
+
 .ftth-map-container {
-  background: white;
-  border-radius: 14px;
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  padding: 7px;
+
+  margin-top: 10px;
+
+  height: 520px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+
+
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.ftth-map-container .leaflet-container {
+
+  border-radius: 14px;
+
+  height: 100%;
+  width: 100%;
+
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
 }
 
 .ftth-map-placeholder {
@@ -95,3 +202,4 @@
   color: #6b7280;
   font-size: 14px;
 }
+

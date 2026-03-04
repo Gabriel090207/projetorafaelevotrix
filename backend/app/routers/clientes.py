@@ -34,6 +34,27 @@ class Cliente(BaseModel):
     conexao_status: Optional[str] = "offline"
 
 
+    # =========================
+    # FTTH / REDE
+    # =========================
+
+    olt_id: Optional[str] = None
+    onu_sn: Optional[str] = None
+    porta_olt: Optional[str] = None
+    vlan: Optional[int] = None
+    mac_address: Optional[str] = None
+
+    # CTO
+    cto_id: Optional[str] = None
+    porta_cto: Optional[int] = None
+
+    modo_autenticacao: Optional[str] = "pppoe" 
+    # pppoe | dhcp | hotspot | ip
+
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
 class ClienteCreateManual(BaseModel):
     nome: str
     documento: str
@@ -41,6 +62,25 @@ class ClienteCreateManual(BaseModel):
     email: Optional[str] = None
     endereco: Optional[str] = None
     plano_id: Optional[str] = None
+
+    # rede
+    pppoe_user: Optional[str] = None
+    pppoe_password: Optional[str] = None
+    ip_address: Optional[str] = None
+    mac_address: Optional[str] = None
+
+    olt_id: Optional[str] = None
+    onu_sn: Optional[str] = None
+    porta_olt: Optional[str] = None
+    vlan: Optional[int] = None
+
+    cto_id: Optional[str] = None
+    porta_cto: Optional[int] = None
+
+    modo_autenticacao: Optional[str] = "pppoe"
+
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class SyncClientesSgpInput(BaseModel):
     cpfs: List[str]
@@ -291,6 +331,25 @@ def criar_cliente_manual(
         "email": dados.email or "",
         "endereco": dados.endereco or "",
         "plano_id": dados.plano_id,
+
+        # rede
+        "pppoe_user": dados.pppoe_user,
+        "pppoe_password": dados.pppoe_password,
+        "ip_address": dados.ip_address,
+        "mac_address": dados.mac_address,
+
+        "olt_id": dados.olt_id,
+        "onu_sn": dados.onu_sn,
+        "porta_olt": dados.porta_olt,
+        "vlan": dados.vlan,
+
+        "cto_id": dados.cto_id,
+        "porta_cto": dados.porta_cto,
+
+        "modo_autenticacao": dados.modo_autenticacao,
+
+        "latitude": dados.latitude,
+        "longitude": dados.longitude,
         "conexao_status": "offline",
         "origem": "manual",
         "empresa_id": empresa_id,

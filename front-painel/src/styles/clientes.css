@@ -118,7 +118,7 @@
 .clientes-table-wrapper {
   background: white;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -217,9 +217,10 @@
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   padding: 8px;
-  z-index: 10;
+  z-index: 9999;
   animation: fadeIn 0.15s ease;
 }
+
 
 .option-item {
   display: flex;

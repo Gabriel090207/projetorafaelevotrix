@@ -41,6 +41,11 @@ from app.routers import receitanet
 from app.routers import monitoramento
 from app.routers import mk
 from app.routers import integracoes
+from app.routers import olts
+from app.routers import pons
+from app.routers import onus
+from app.routers import ctos
+from app.routers import mapa_ftth
 
 # 📦 Produtos
 from app.routers import planos
@@ -73,6 +78,13 @@ app.include_router(receitanet.router)
 app.include_router(monitoramento.router)
 app.include_router(mk.router)
 app.include_router(integracoes.router)
+app.include_router(olts.router)
+app.include_router(pons.router)
+app.include_router(onus.router)
+app.include_router(ctos.router)
+app.include_router(mapa_ftth.router)
+
+
 
 # 📦 Produtos
 app.include_router(planos.router)
