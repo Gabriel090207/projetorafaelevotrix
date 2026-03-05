@@ -90,7 +90,7 @@ def criar_contrato(dados: ContratoCreate):
     # 🔢 GERAR NÚMERO DO CONTRATO
     contratos_stream = empresa_ref.collection("contratos").stream()
     total_contratos = len(list(contratos_stream)) + 1
-    numero_contrato = f"CT-{str(total_contratos).zfill(6)}"
+    numero_contrato = f"CT-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
     contrato_id = str(uuid4())
 
@@ -102,7 +102,7 @@ def criar_contrato(dados: ContratoCreate):
         "plano_id": dados.plano_id,
         "plano_nome": plano_data.get("nome"),
         "valor_mensal": dados.valor_mensal,
-        "data_inicio": dados.data_inicio,
+        "data_inicio": dados.data_inicio.isoformat()
         "fidelidade_meses": dados.fidelidade_meses,
         "multa_rescisao": dados.multa_rescisao,
         "status": "ATIVO",

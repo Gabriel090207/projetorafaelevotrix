@@ -39,6 +39,7 @@ class Cliente(BaseModel):
     # =========================
 
     olt_id: Optional[str] = None
+    onu_id: Optional[str] = None
     onu_sn: Optional[str] = None
     porta_olt: Optional[str] = None
     vlan: Optional[int] = None
@@ -339,6 +340,7 @@ def criar_cliente_manual(
         "mac_address": dados.mac_address,
 
         "olt_id": dados.olt_id,
+        "onu_id": dados.onu_id,
         "onu_sn": dados.onu_sn,
         "porta_olt": dados.porta_olt,
         "vlan": dados.vlan,

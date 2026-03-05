@@ -17,6 +17,7 @@ class CriarCtoInput(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     projeto_id: str | None = None
+    pon_id: str | None = None
 
 
 class ConectarClienteInput(BaseModel):
@@ -85,6 +86,7 @@ def criar_cto(
         "latitude": dados.latitude,
         "longitude": dados.longitude,
         "projeto_id": dados.projeto_id
+        "pon_id": dados.pon_id
     })
 
     return {

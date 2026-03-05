@@ -114,10 +114,23 @@ def obter_mapa_ftth(ctx=Depends(require_empresa_access)):
         d["id"] = doc.id
         clientes.append(d)
 
+    # =========================
+    # ONUs
+    # =========================
+    onus_docs = empresa_ref.collection("onus").stream()
+
+    onus = []
+
+    for doc in onus_docs:
+        d = doc.to_dict()
+        d["id"] = doc.id
+        onus.append(d)
+
     return {
         "projetos": projetos,
         "olts": olts,
         "pons": pons,
         "ctos": ctos,
+        "onus": onus,
         "clientes": clientes
     }

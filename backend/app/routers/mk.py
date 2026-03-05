@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.services.mk_auth import MKAuth
+from app.core.deps import require_empresa_access
 
 router = APIRouter(prefix="/mk", tags=["MK-AUTH"])
 
@@ -8,13 +9,41 @@ router = APIRouter(prefix="/mk", tags=["MK-AUTH"])
 # LISTAR CLIENTES DO MK
 # ==============================
 
-@router.get("/{empresa_id}/clientes")
-def listar_clientes_mk(empresa_id: str):
+@router.get("/clientes")
+def listar_clientes_mk(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
 
     try:
+
         mk = MKAuth(empresa_id)
+
         resultado = mk.listar_clientes()
+
         return resultado
 
     except Exception as e:
+
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ==============================
+# CLIENTES ONLINE
+# ==============================
+
+@router.get("/online")
+def clientes_online(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+
+    try:
+
+        mk = MKAuth(empresa_id)
+
+        resultado = mk.clientes_online()
+
+        return resultado
+
+    except Exception as e:
+
         raise HTTPException(status_code=400, detail=str(e))

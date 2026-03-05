@@ -2,6 +2,10 @@ from fastapi import APIRouter
 import psutil
 from datetime import datetime
 
+from fastapi import Depends
+from app.core.deps import require_empresa_access
+from app.services.mk_auth import MKAuth
+
 router = APIRouter(prefix="/monitoramento", tags=["Monitoramento"])
 
 
@@ -22,3 +26,29 @@ def monitorar_servidor():
 
         "coletado_em": datetime.utcnow().isoformat()
     }
+
+
+# =========================
+# MONITORAMENTO MIKROTIK
+# =========================
+
+@router.get("/mikrotik")
+def monitorar_mikrotik(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+
+    try:
+
+        mk = MKAuth(empresa_id)
+
+        online = mk.clientes_online()
+
+        return {
+            "clientes_online": online
+        }
+
+    except Exception as e:
+
+        return {
+            "erro": str(e)
+        }

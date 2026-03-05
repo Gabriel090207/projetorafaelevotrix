@@ -11,6 +11,7 @@ router = APIRouter(prefix="/onus", tags=["ONUs"])
 class ONUCreate(BaseModel):
     olt_id: str
     pon_id: str
+    pon_porta: int
     serial: str
     modelo: Optional[str] = None
     cliente_id: Optional[str] = None
@@ -34,6 +35,7 @@ def criar_onu(dados: ONUCreate, ctx=Depends(require_empresa_access)):
     ref.set({
         "olt_id": dados.olt_id,
         "pon_id": dados.pon_id,
+        "pon_porta": dados.pon_porta,
         "serial": dados.serial,
         "modelo": dados.modelo,
         "cliente_id": dados.cliente_id,

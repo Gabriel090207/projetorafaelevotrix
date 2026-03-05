@@ -1,0 +1,183 @@
+.onus-page{
+display:flex;
+flex-direction:column;
+gap:24px;
+}
+
+/* HEADER */
+
+.onus-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.onus-header h1{
+font-size:24px;
+font-weight:600;
+}
+
+/* CARDS */
+
+.onus-cards{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:16px;
+}
+
+.onus-card{
+padding:20px;
+border-radius:16px;
+color:white;
+box-shadow:0 6px 16px rgba(0,0,0,0.08);
+}
+
+.onus-card span{
+font-size:13px;
+opacity:0.9;
+}
+
+.onus-card strong{
+font-size:22px;
+font-weight:700;
+display:block;
+}
+
+.onus-card.primary{
+background:linear-gradient(135deg,#0f766e,#042f2e);
+}
+
+.onus-card.success{
+background:linear-gradient(135deg,#14532d,#052e16);
+}
+
+.onus-card.warning{
+background:linear-gradient(135deg,#78350f,#451a03);
+}
+
+/* FILTROS */
+
+.onus-filters{
+display:grid;
+grid-template-columns:200px 200px 1fr;
+gap:16px;
+
+background:white;
+padding:16px;
+
+border-radius:12px;
+
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.filter-group{
+display:flex;
+flex-direction:column;
+gap:6px;
+}
+
+.filter-group label{
+font-size:13px;
+color:#6b7280;
+font-weight:500;
+}
+
+.filter-group select{
+height:44px;
+padding:0 14px;
+border-radius:10px;
+border:1px solid #d1d5db;
+background:#fff;
+}
+/* SEARCH */
+
+.search-input{
+display:flex;
+align-items:center;
+
+height:44px;
+padding:0 14px;
+gap:10px;
+
+border:1px solid #d1d5db;
+border-radius:10px;
+background:#fff;
+}
+
+.search-input input{
+flex:1;
+border:none;
+outline:none;
+font-size:14px;
+background:transparent;
+}
+
+/* TABELA */
+
+.onus-table-wrapper{
+background:white;
+border-radius:12px;
+overflow:visible;
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.onus-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.onus-table th,
+.onus-table td{
+padding:14px;
+border-bottom:1px solid #e5e7eb;
+text-align:left;
+}
+
+.onus-table th{
+font-size:12px;
+color:#6b7280;
+text-transform:uppercase;
+}
+
+/* AÇÕES */
+
+.actions{
+position:relative;
+}
+
+.options-wrapper{
+position:relative;
+}
+
+.options-button{
+background:none;
+border:none;
+cursor:pointer;
+font-size:18px;
+}
+
+.options-menu{
+position:absolute;
+right:0;
+top:30px;
+
+background:white;
+border-radius:8px;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
+
+min-width:140px;
+z-index:10;
+}
+
+.option-item{
+display:flex;
+align-items:center;
+gap:8px;
+
+padding:10px;
+cursor:pointer;
+}
+
+.option-item:hover{
+background:#f3f4f6;
+}
