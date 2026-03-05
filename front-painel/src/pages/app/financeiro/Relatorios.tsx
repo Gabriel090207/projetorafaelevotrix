@@ -7,10 +7,12 @@ import {
   FaMoneyBillWave,
   FaNetworkWired,
   FaFileAlt,
-  FaSearch,
+
   FaEye,
   FaDownload,
 } from "react-icons/fa";
+
+import { FiSearch } from "react-icons/fi";
 
 interface Cliente {
   id: string;
@@ -117,7 +119,7 @@ const Relatorios = () => {
         <div className="filter-group search">
           <label>Buscar</label>
           <div className="search-input">
-            <FaSearch />
+            <FiSearch />
             <input placeholder="Nome ou código" />
           </div>
         </div>

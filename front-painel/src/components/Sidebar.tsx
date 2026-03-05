@@ -16,6 +16,7 @@ import {
   FaBoxOpen,
   FaRoute,
   FaWifi,
+  FaFileInvoice
 } from "react-icons/fa";
 
 import {
@@ -64,6 +65,7 @@ const Sidebar = () => {
           { to: "/boletos", label: "Boletos & Pix", icon: <FaFileAlt /> },
           { to: "/regua-cobranca", label: "Régua", icon: <FaRoute /> },
           { to: "/relatorios", label: "Relatórios", icon: <FaFileAlt /> },
+          { to: "/notas-fiscais", label: "Notas Fiscais", icon: <FaFileInvoice /> }
         ],
       },
       {
@@ -75,9 +77,12 @@ const Sidebar = () => {
           { to: "/online", label: "Clientes Online", icon: <FaWifi /> },
           { to: "/ftth", label: "Mapa FTTH", icon: <FaRoute /> },
           { to: "/olts", label: "OLTs", icon: <FaServer /> },
-  { to: "/pons", label: "PONs", icon: <FaProjectDiagram /> },
-  { to: "/ctos", label: "CTOs", icon: <FaNetworkWired /> },
-  { to: "/onus", label: "ONUs", icon: <FaMicrochip /> },
+          { to: "/pons", label: "PONs", icon: <FaProjectDiagram /> },
+          { to: "/ctos", label: "CTOs", icon: <FaNetworkWired /> },
+          { to: "/onus", label: "ONUs", icon: <FaMicrochip /> },
+          { to: "/monitoramento", label: "Monitoramento", icon: <FaServer /> },
+          { to: "/logs", label: "Logs Navegação", icon: <FaNetworkWired /> },
+          { to: "/equipamentos", label: "Equipamentos", icon: <FaServer /> },
         ],
       },
       {

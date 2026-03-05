@@ -1,7 +1,9 @@
 import "../../../styles/contratos.css";
+
 import { FiMenu, FiEye, FiEdit, FiTrash } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import api from "../../../services/api";
+
 
 const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
 
@@ -165,48 +167,66 @@ export default function Contratos() {
                 <td>{formatarData(contrato.data_inicio)}</td>
 
                 <td>
+                 
 
-                  <div className="contratos-options-wrapper">
+                 <div className="contratos-actions">
+  <div className="contratos-dd">
+    <button
+      type="button"
+      className="contratos-dd__btn"
+      onClick={() =>
+        setOpenMenuId(openMenuId === contrato.id ? null : contrato.id)
+      }
+      aria-haspopup="menu"
+      aria-expanded={openMenuId === contrato.id}
+    >
+      <FiMenu />
+    </button>
 
-                    <button
-                      className="contratos-options-button"
-                      onClick={() =>
-                        setOpenMenuId(
-                          openMenuId === contrato.id
-                            ? null
-                            : contrato.id
-                        )
-                      }
-                    >
-                      <FiMenu />
-                    </button>
+    {openMenuId === contrato.id && (
+      <div className="contratos-dd__menu" role="menu">
+        <button
+          type="button"
+          className="contratos-dd__item"
+          role="menuitem"
+          onClick={() => {
+            setOpenMenuId(null);
+            // TODO: abrir/ver contrato (você troca depois)
+            console.log("ver contrato", contrato.id);
+          }}
+        >
+          <FiEye /> <span>Ver contrato</span>
+        </button>
 
-                    {openMenuId === contrato.id && (
+        <button
+          type="button"
+          className="contratos-dd__item"
+          role="menuitem"
+          onClick={() => {
+            setOpenMenuId(null);
+            // TODO: editar (você troca depois)
+            console.log("editar", contrato.id);
+          }}
+        >
+          <FiEdit /> <span>Editar</span>
+        </button>
 
-                      <div className="contratos-options-menu">
-
-                        <div className="contratos-option-item">
-                          <FiEye /> Ver contrato
-                        </div>
-
-                        <div className="contratos-option-item">
-                          <FiEdit /> Editar
-                        </div>
-
-                        <div
-                          className="contratos-option-item danger"
-                          onClick={() =>
-                            cancelarContrato(contrato.id)
-                          }
-                        >
-                          <FiTrash /> Cancelar
-                        </div>
-
-                      </div>
-
-                    )}
-
-                  </div>
+        <button
+          type="button"
+          className="contratos-dd__item contratos-dd__item--danger"
+          role="menuitem"
+          onClick={() => {
+            setOpenMenuId(null);
+            cancelarContrato(contrato.id);
+          }}
+        >
+          <FiTrash /> <span>Cancelar</span>
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+                 
 
                 </td>
 

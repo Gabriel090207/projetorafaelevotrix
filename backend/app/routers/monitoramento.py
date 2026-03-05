@@ -1,18 +1,24 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import psutil
 from datetime import datetime
 
-from fastapi import Depends
 from app.core.deps import require_empresa_access
 from app.services.mk_auth import MKAuth
 
 router = APIRouter(prefix="/monitoramento", tags=["Monitoramento"])
 
 
+# =========================
+# MONITORAMENTO SERVIDOR
+# =========================
+
 @router.get("/servidor")
 def monitorar_servidor():
+
     cpu = psutil.cpu_percent(interval=1)
+
     memoria = psutil.virtual_memory()
+
     rede = psutil.net_io_counters()
 
     return {
@@ -52,3 +58,48 @@ def monitorar_mikrotik(ctx=Depends(require_empresa_access)):
         return {
             "erro": str(e)
         }
+
+
+# =========================
+# MONITORAMENTO GERAL
+# =========================
+
+@router.get("/empresa/{empresa_id}")
+def monitoramento_empresa(empresa_id: str):
+
+    cpu = psutil.cpu_percent(interval=1)
+
+    memoria = psutil.virtual_memory()
+
+    try:
+
+        mk = MKAuth(empresa_id)
+
+        clientes_online = mk.clientes_online()
+
+    except Exception:
+
+        clientes_online = 0
+
+
+    return [
+
+        {
+            "nome": "Servidor Principal",
+            "ip": "127.0.0.1",
+            "cpu": cpu,
+            "memoria": memoria.percent,
+            "uptime": "online",
+            "trafego": 0
+        },
+
+        {
+            "nome": "MikroTik",
+            "ip": "router",
+            "cpu": 0,
+            "memoria": 0,
+            "uptime": f"{clientes_online} clientes online",
+            "trafego": clientes_online
+        }
+
+    ]

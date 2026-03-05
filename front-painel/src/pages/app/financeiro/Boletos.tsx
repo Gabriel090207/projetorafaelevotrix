@@ -1,5 +1,6 @@
 import "../../../styles/boletos.css";
-import { FaFileInvoiceDollar, FaSearch } from "react-icons/fa";
+import { FaFileInvoiceDollar } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
 
 const Boletos = () => {
   return (
@@ -38,7 +39,7 @@ const Boletos = () => {
         <div className="filter-group search">
           <label>Buscar</label>
           <div className="search-input">
-            <FaSearch />
+            <FiSearch />
             <input placeholder="Cliente, CPF ou referência" />
           </div>
         </div>

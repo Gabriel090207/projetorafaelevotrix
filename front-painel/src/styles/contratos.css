@@ -143,25 +143,6 @@
   color: #b91c1c;
 }
 
-/* AÇÕES */
-
-.contratos-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 16px;
-  color: #6b7280;
-}
-
-.contratos-actions svg {
-  cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.contratos-actions svg:hover {
-  color: #111827;
-  transform: scale(1.1);
-}
 
 /* RESPONSIVO */
 
@@ -177,87 +158,103 @@
   }
 }
 
-/* ================= OPTIONS DROPDOWN ================= */
 
-.contratos-options-wrapper {
-  position: relative;
+/* ================= DROPDOWN AÇÕES (PADRÃO CLIENTES) ================= */
+
+.contratos-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-.contratos-options-button {
+.contratos-dd {
+  position: relative;
+  display: inline-block;
+}
+
+.contratos-dd__btn {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   border: none;
   background: #f3f4f6;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
-.contratos-options-button:hover {
+.contratos-dd__btn:hover {
   background: #e5e7eb;
 }
 
-.contratos-options-button svg {
+.contratos-dd__btn svg {
   font-size: 18px;
   color: #374151;
 }
 
-.contratos-options-menu {
-   position: absolute;
-  right: 100px;
+.contratos-dd__menu {
+  position: absolute;
+  right: 0;
   top: 45px;
+
   width: 180px;
   background: white;
   border-radius: 12px;
+
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   padding: 8px;
+
   z-index: 9999;
   animation: fadeIn 0.15s ease;
 }
 
-.contratos-option-item {
+.contratos-dd__item {
+  width: 100%;
+  border: none;
+  background: transparent;
+
   display: flex;
   align-items: center;
   gap: 10px;
 
   padding: 10px 12px;
-
   border-radius: 8px;
 
   cursor: pointer;
-
   font-size: 14px;
-
-  color: #5b626e; /* mesma cor do Clientes */
+  color: #374151;
 
   transition: background 0.15s ease;
+  text-align: left;
 }
 
-.contratos-option-item:hover {
+.contratos-dd__item:hover {
   background: #f3f4f6;
 }
 
-.contratos-option-item svg {
+.contratos-dd__item svg {
   font-size: 16px;
   color: #6b7280;
 }
 
-.contratos-option-item.danger {
+.contratos-dd__item--danger {
   color: #b91c1c;
 }
 
-.contratos-option-item.danger svg {
+.contratos-dd__item--danger svg {
   color: #b91c1c;
 }
 
-.contratos-option-item.danger:hover {
+.contratos-dd__item--danger:hover {
   background: #fee2e2;
 }
 
-@keyframes contratosFadeIn {
+/* animação igual clientes */
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(-4px);

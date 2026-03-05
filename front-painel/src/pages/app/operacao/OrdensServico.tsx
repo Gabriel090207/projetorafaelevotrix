@@ -5,9 +5,15 @@ import "../../../styles/os.css";
 
 import {
   FaClipboardList,
-  FaSearch,
+  
   FaPlus,
 } from "react-icons/fa";
+
+import {
+
+  FiSearch
+
+} from "react-icons/fi";
 
 const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
 
@@ -192,7 +198,7 @@ const OrdemServico = () => {
 
           <div className="search-input">
 
-            <FaSearch />
+            <FiSearch />
 
             <input placeholder="Buscar cliente ou OS" />
 

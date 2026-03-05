@@ -5,8 +5,13 @@ import "../../../styles/financeiro.css";
 import {
   FaMoneyBillWave,
   FaFileInvoiceDollar,
-  FaSearch,
+
 } from "react-icons/fa";
+
+
+import {  FiSearch,
+ } from "react-icons/fi";
+
 
 const EMPRESA_ID = localStorage.getItem("empresa_id") || "";
 
@@ -120,7 +125,7 @@ const Financeiro = () => {
         <div className="filter-group search">
           <label>Buscar</label>
           <div className="search-input">
-            <FaSearch />
+            <FiSearch />
             <input placeholder="Cliente, CPF ou fatura" />
           </div>
         </div>

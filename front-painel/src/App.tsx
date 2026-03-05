@@ -24,6 +24,8 @@ import Financeiro from "./pages/app/financeiro/Financeiro";
 import Relatorios from "./pages/app/financeiro/Relatorios";
 import Boletos from "./pages/app/financeiro/Boletos";
 import ReguaCobranca from "./pages/app/financeiro/ReguaCobranca";
+import NotasFiscais from "./pages/app/financeiro/NotasFiscais";
+
 
 /* ================= REDE / NOC ================= */
 
@@ -37,6 +39,9 @@ import Ctos from "./pages/app/rede/Ctos";
 import Olts from "./pages/app/rede/Olts";
 import Pons from "./pages/app/rede/Pons";
 import Onus from "./pages/app/rede/Onus";
+import Monitoramento from "./pages/app/rede/Monitoramento";
+import LogsNavegacao from "./pages/app/rede/LogsNavegacao";
+import Equipamentos from "./pages/app/rede/Equipamentos";
 
 /* ================= PRODUTOS ================= */
 
@@ -94,7 +99,7 @@ function App() {
       <Route path="/relatorios" element={<Protected><Relatorios /></Protected>} />
       <Route path="/boletos" element={<Protected><Boletos /></Protected>} />
       <Route path="/regua-cobranca" element={<Protected><ReguaCobranca /></Protected>} />
-
+      <Route path="/notas-fiscais" element={<Protected><NotasFiscais /></Protected>} />
 
       {/* ================= REDE / NOC ================= */}
 
@@ -111,7 +116,9 @@ function App() {
       <Route path="/ctos" element={<Protected><Ctos /></Protected>} />
 
       <Route path="/onus" element={<Protected><Onus /></Protected>} />
-
+      <Route path="/monitoramento" element={<Protected><Monitoramento /></Protected>} />
+      <Route path="/logs" element={<Protected><LogsNavegacao /></Protected>} />
+      <Route path="/equipamentos" element={<Protected><Equipamentos /></Protected>} />
 
       {/* ================= PRODUTOS ================= */}
 

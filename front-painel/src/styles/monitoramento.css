@@ -1,0 +1,193 @@
+/* ==================================
+   MONITORAMENTO - PADRÃO DO SISTEMA
+================================== */
+
+.monitoramento-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ================= HEADER ================= */
+
+.monitoramento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.monitoramento-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* ================= GRID ================= */
+
+.monitoramento-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+
+  gap: 18px;
+
+}
+
+
+/* ================= CARD ================= */
+
+.equipamento-card {
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 20px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+
+  transition: 0.25s ease;
+
+}
+
+.equipamento-card:hover {
+
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+
+}
+
+
+/* ================= HEADER CARD ================= */
+
+.equipamento-card-header {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+.equipamento-card-header svg {
+
+  font-size: 20px;
+
+  color: #dc2626;
+
+}
+
+.equipamento-card-header strong {
+
+  display: block;
+
+  font-size: 15px;
+
+}
+
+.equipamento-card-header span {
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+}
+
+
+/* ================= STATS ================= */
+
+.equipamento-stats {
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+}
+
+.stat {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  background: #f9fafb;
+
+  border-radius: 10px;
+
+  padding: 10px;
+
+}
+
+.stat svg {
+
+  color: #dc2626;
+
+  font-size: 16px;
+
+}
+
+.stat span {
+
+  font-size: 11px;
+
+  color: #6b7280;
+
+}
+
+.stat strong {
+
+  display: block;
+
+  font-size: 14px;
+
+}
+
+
+/* ================= FOOTER ================= */
+
+.equipamento-footer {
+
+  border-top: 1px solid #e5e7eb;
+
+  padding-top: 10px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+}
+
+.equipamento-footer strong {
+
+  color: #111827;
+
+}
+
+
+/* ================= RESPONSIVO ================= */
+
+@media (max-width: 900px) {
+
+  .equipamento-stats {
+
+    grid-template-columns: 1fr;
+
+  }
+
+}

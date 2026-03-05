@@ -1,5 +1,6 @@
 import "../../../styles/comodato.css";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
 
 interface Equipamento {
   id: string;
@@ -42,7 +43,7 @@ const Comodato = () => {
         <div className="filter-group search">
           <label>Buscar</label>
           <div className="search-input">
-            <FaSearch />
+            <FiSearch />
             <input placeholder="MAC, serial ou cliente" />
           </div>
         </div>

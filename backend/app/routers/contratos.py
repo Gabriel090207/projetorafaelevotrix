@@ -4,6 +4,7 @@ from typing import List, Optional
 from uuid import uuid4
 from datetime import datetime, timedelta
 from app.core.firebase import db
+from app.services.contrato_pdf import gerar_pdf_contrato
 
 router = APIRouter(prefix="/contratos", tags=["Contratos"])
 
@@ -118,11 +119,32 @@ def criar_contrato(dados: ContratoCreate):
             "status_online": False
         },
 
-        "criado_em": datetime.utcnow()
+        "criado_em": datetime.utcnow(),
+        # assinatura digital
+        "assinatura_cliente": None,
+        "ip_assinatura": None,
+        "data_assinatura": None,
+        "arquivo_contrato": None
     }
 
     # 💾 SALVAR CONTRATO
     empresa_ref.collection("contratos").document(contrato_id).set(novo_contrato)
+
+
+    # =====================================================
+    # 📄 GERAR PDF DO CONTRATO
+    # =====================================================
+
+    pdf_path = gerar_pdf_contrato(
+        novo_contrato,
+        cliente_data,
+        {}
+    )
+
+    # salvar caminho do pdf
+    empresa_ref.collection("contratos").document(contrato_id).update({
+    "arquivo_contrato": pdf_path
+    })
 
     # =====================================================
     # 💰 GERAR PRIMEIRA COBRANÇA AUTOMÁTICA
@@ -194,3 +216,69 @@ def cancelar_contrato(empresa_id: str, contrato_id: str):
     })
 
     return {"message": "Contrato cancelado com sucesso"}
+
+
+# =====================================================
+# ✍️ ASSINAR CONTRATO
+# =====================================================
+
+from fastapi import Request
+from pydantic import BaseModel
+
+class AssinarContratoInput(BaseModel):
+    assinatura: str
+
+
+@router.post("/{empresa_id}/{contrato_id}/assinar")
+def assinar_contrato(
+    empresa_id: str,
+    contrato_id: str,
+    dados: AssinarContratoInput,
+    request: Request
+):
+
+    contrato_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("contratos")
+        .document(contrato_id)
+    )
+
+    contrato_doc = contrato_ref.get()
+
+    if not contrato_doc.exists:
+        raise HTTPException(404, "Contrato não encontrado")
+
+    ip = request.client.host
+
+    # salva assinatura
+    contrato_ref.update({
+        "assinatura_cliente": dados.assinatura,
+        "ip_assinatura": ip,
+        "data_assinatura": datetime.utcnow()
+    })
+
+    contrato_atualizado = contrato_ref.get().to_dict()
+
+    contrato_atualizado["assinatura_cliente"] = dados.assinatura
+
+    cliente_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(contrato_atualizado["cliente_id"])
+    )
+
+    cliente_data = cliente_ref.get().to_dict()
+
+    pdf_path = gerar_pdf_contrato(
+        contrato_atualizado,
+        cliente_data,
+        {}
+    )
+
+    contrato_ref.update({
+        "arquivo_contrato": pdf_path
+    })
+
+    return {"message": "Contrato assinado com sucesso"}
