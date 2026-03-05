@@ -25,6 +25,7 @@ import ReguaCobranca from "./pages/app/financeiro/ReguaCobranca";
 import Rede from "./pages/app/rede/Rede";
 import ClientesOnline from "./pages/app/rede/ClientesOnline";
 import MapaFTTH from "./pages/app/rede/MapaFTTH";
+import Ctos from "./pages/app/rede/Ctos";
 
 
 //produtos
@@ -67,6 +68,7 @@ function App() {
       <Route path="/rede" element={<Protected><Rede /></Protected>} />
       <Route path="/online" element={<Protected><ClientesOnline /></Protected>} />
       <Route path="/ftth" element={<Protected><MapaFTTH /></Protected>} />
+      <Route path="/ctos" element={<Protected><Ctos /></Protected>} />
 
 
        {/* produtos */}

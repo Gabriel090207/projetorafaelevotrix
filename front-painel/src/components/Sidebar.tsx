@@ -18,6 +18,12 @@ import {
   FaWifi,
 } from "react-icons/fa";
 
+import {
+FaServer,
+FaProjectDiagram,
+FaMicrochip
+} from "react-icons/fa";
+
 import { FiChevronDown } from "react-icons/fi";
 
 type GroupKey = "operacao" | "financeiro" | "rede" | "produtos" | "admin" | null;
@@ -68,6 +74,10 @@ const Sidebar = () => {
           { to: "/rede", label: "Visão Geral", icon: <FaNetworkWired /> },
           { to: "/online", label: "Clientes Online", icon: <FaWifi /> },
           { to: "/ftth", label: "Mapa FTTH", icon: <FaRoute /> },
+          { to: "/olts", label: "OLTs", icon: <FaServer /> },
+  { to: "/pons", label: "PONs", icon: <FaProjectDiagram /> },
+  { to: "/ctos", label: "CTOs", icon: <FaNetworkWired /> },
+  { to: "/onus", label: "ONUs", icon: <FaMicrochip /> },
         ],
       },
       {
