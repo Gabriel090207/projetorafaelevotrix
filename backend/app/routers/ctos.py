@@ -85,7 +85,7 @@ def criar_cto(
         "portas": dados.portas,
         "latitude": dados.latitude,
         "longitude": dados.longitude,
-        "projeto_id": dados.projeto_id
+        "projeto_id": dados.projeto_id,
         "pon_id": dados.pon_id
     })
 

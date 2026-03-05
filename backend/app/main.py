@@ -32,6 +32,7 @@ from app.routers import test
 from app.routers import clientes
 from app.routers import contratos
 from app.routers import bot
+from app.routers import ordens_servico
 
 # 💰 Financeiro
 from app.routers import cobrancas
@@ -69,6 +70,7 @@ app.include_router(test.router)
 app.include_router(clientes.router)
 app.include_router(contratos.router)
 app.include_router(bot.router)
+app.include_router(ordens_servico.router)
 
 # 💰 Financeiro
 app.include_router(cobrancas.router)

@@ -93,7 +93,7 @@
 .contratos-table-wrapper {
   background: white;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
@@ -177,9 +177,7 @@
   }
 }
 
-/* ===============================
-   OPTIONS DROPDOWN (CONTRATOS)
-================================ */
+/* ================= OPTIONS DROPDOWN ================= */
 
 .contratos-options-wrapper {
   position: relative;
@@ -208,26 +206,33 @@
 }
 
 .contratos-options-menu {
-  position: absolute;
-  right: 0;
+   position: absolute;
+  right: 100px;
   top: 45px;
-  width: 200px;
+  width: 180px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   padding: 8px;
-  z-index: 10;
-  animation: contratosFadeIn 0.15s ease;
+  z-index: 9999;
+  animation: fadeIn 0.15s ease;
 }
 
 .contratos-option-item {
   display: flex;
   align-items: center;
   gap: 10px;
+
   padding: 10px 12px;
+
   border-radius: 8px;
+
   cursor: pointer;
+
   font-size: 14px;
+
+  color: #5b626e; /* mesma cor do Clientes */
+
   transition: background 0.15s ease;
 }
 
@@ -237,9 +242,14 @@
 
 .contratos-option-item svg {
   font-size: 16px;
+  color: #6b7280;
 }
 
 .contratos-option-item.danger {
+  color: #b91c1c;
+}
+
+.contratos-option-item.danger svg {
   color: #b91c1c;
 }
 

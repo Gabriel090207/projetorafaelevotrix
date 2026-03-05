@@ -102,7 +102,7 @@ def criar_contrato(dados: ContratoCreate):
         "plano_id": dados.plano_id,
         "plano_nome": plano_data.get("nome"),
         "valor_mensal": dados.valor_mensal,
-        "data_inicio": dados.data_inicio.isoformat()
+        "data_inicio": dados.data_inicio.isoformat(),
         "fidelidade_meses": dados.fidelidade_meses,
         "multa_rescisao": dados.multa_rescisao,
         "status": "ATIVO",

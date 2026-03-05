@@ -10,7 +10,10 @@ router = APIRouter(prefix="/mk", tags=["MK-AUTH"])
 # ==============================
 
 @router.get("/clientes")
-def listar_clientes_mk(ctx=Depends(require_empresa_access)):
+def listar_clientes_mk(
+    pagina: int = 1,
+    ctx=Depends(require_empresa_access)
+):
 
     empresa_id = ctx["empresa_id"]
 
@@ -18,29 +21,7 @@ def listar_clientes_mk(ctx=Depends(require_empresa_access)):
 
         mk = MKAuth(empresa_id)
 
-        resultado = mk.listar_clientes()
-
-        return resultado
-
-    except Exception as e:
-
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# ==============================
-# CLIENTES ONLINE
-# ==============================
-
-@router.get("/online")
-def clientes_online(ctx=Depends(require_empresa_access)):
-
-    empresa_id = ctx["empresa_id"]
-
-    try:
-
-        mk = MKAuth(empresa_id)
-
-        resultado = mk.clientes_online()
+        resultado = mk.listar_clientes(pagina)
 
         return resultado
 
