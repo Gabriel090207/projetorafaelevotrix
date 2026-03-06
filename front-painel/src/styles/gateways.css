@@ -78,38 +78,38 @@
 .gateways-table td {
   padding: 16px 20px;
   border-bottom: 1px solid #e5e7eb;
-
+  vertical-align: middle;
 }
-
 /* =========================
    ALINHAMENTOS FINOS
 ========================= */
 
-/* Gateway */
-.gateways-table th:nth-child(1),
-.gateways-table td:nth-child(1) {
+/* Sistema */
+.gateways-table td:nth-child(1),
+.gateways-table th:nth-child(1) {
   text-align: left;
   padding-left: 28px;
 }
 
 /* Nome */
-.gateways-table th:nth-child(2),
-.gateways-table td:nth-child(2) {
+.gateways-table td:nth-child(2),
+.gateways-table th:nth-child(2) {
   text-align: center;
 }
 
 /* Status */
-.gateways-table th:nth-child(3),
-.gateways-table td:nth-child(3) {
+.gateways-table td:nth-child(3),
+.gateways-table th:nth-child(3) {
   text-align: center;
 }
 
 /* Opções */
-.gateways-table th:nth-child(4),
-.gateways-table td:nth-child(4) {
+.gateways-table td:nth-child(4),
+.gateways-table th:nth-child(4) {
   text-align: center;
   padding-right: 0;
 }
+
 
 .gateways-table th {
   font-size: 12px;
@@ -117,7 +117,6 @@
   text-transform: uppercase;
   background: #f9fafb;
 }
-
 /* STATUS */
 
 .status-badge {
@@ -148,7 +147,6 @@
   font-size: 16px;
   color: #6b7280;
 }
-
 .acoes svg {
   cursor: pointer;
   transition: 0.2s;

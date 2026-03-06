@@ -16,7 +16,20 @@ def listar_clientes_online(ctx=Depends(require_empresa_access)):
 
         online = mk.clientes_online()
 
-        return online
+        if not online:
+            return {
+                "total_online": 0,
+                "clientes": [],
+                "timestamp": None
+            }
+
+        total = len(online)
+
+        return {
+            "total_online": total,
+            "clientes": online,
+            "timestamp": __import__("datetime").datetime.utcnow().isoformat()
+        }
 
     except Exception as e:
 

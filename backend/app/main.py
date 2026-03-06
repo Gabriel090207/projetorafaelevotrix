@@ -8,6 +8,8 @@ from app.core.firebase import db
 
 app = FastAPI(title="Projeto Evotrix API")
 
+from app.core.scheduler import iniciar_scheduler
+
 # =====================================================
 # 🔐 CORS
 # =====================================================
@@ -39,6 +41,7 @@ from app.routers import cobrancas
 from app.routers import receitanet
 from app.routers import nf
 from app.routers import nfcom
+from app.routers import pix
 
 # 🌐 Rede
 from app.routers import monitoramento
@@ -61,7 +64,7 @@ from app.routers import empresas
 from app.routers import usuarios
 from app.routers import webhooks
 from app.routers import sync
-
+from app.routers import gateways
 
 # =====================================================
 # 🔗 REGISTRO DOS ROUTERS
@@ -82,6 +85,7 @@ app.include_router(cobrancas.router)
 app.include_router(receitanet.router)
 app.include_router(nf.router)
 app.include_router(nfcom.router)
+app.include_router(pix.router)
 
 
 # 🌐 Rede
@@ -107,7 +111,7 @@ app.include_router(empresas.router)
 app.include_router(usuarios.router)
 app.include_router(webhooks.router)
 app.include_router(sync.router)
-
+app.include_router(gateways.router)
 
 # =====================================================
 # 🧪 ROTAS BASE
@@ -121,3 +125,8 @@ def root():
 def firebase_test():
     db.collection("teste").add({"status": "conectado"})
     return {"firebase": "ok"}
+
+
+@app.on_event("startup")
+def start_scheduler():
+    iniciar_scheduler()

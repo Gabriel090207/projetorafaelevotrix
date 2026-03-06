@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime, timedelta
 from app.core.firebase import db
 import uuid
+from app.services.gateway_service import GatewayService
+from app.services.banco_bb_pix import BancoBBPix
+from app.services.boleto_service import BoletoService
 
 router = APIRouter(prefix="/cobrancas", tags=["Cobranças"])
 
@@ -132,6 +135,35 @@ def pagar_cobranca(empresa_id: str, cobranca_id: str):
         "status": "PAGO",
         "data_pagamento": datetime.utcnow()
     })
+
+
+
+    from app.services.mk_auth import MKAuth
+
+    cliente_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+    )
+
+    cliente = cliente_ref.get().to_dict()
+
+    login = cliente.get("login")
+
+    try:
+
+        mk = MKAuth(empresa_id)
+
+        mk.liberar_cliente(login)
+
+        cliente_ref.update({
+            "status": "ATIVO"
+        })
+
+    except Exception as e:
+
+        print(f"Erro liberar cliente {cliente_id}: {e}")
 
     return {"message": "Cobrança marcada como paga"}
 
@@ -289,11 +321,15 @@ def gerar_pix(empresa_id: str, cobranca_id: str):
     }
 
 
+from app.services.gateway_service import GatewayService
+from app.services.banco_bb_pix import BancoBBPix
+
+
 # ==============================
-# CONFIRMAR PAGAMENTO
+# GERAR PIX
 # ==============================
-@router.post("/confirmar-pagamento/{empresa_id}/{cobranca_id}")
-def confirmar_pagamento(empresa_id: str, cobranca_id: str):
+@router.post("/gerar-pix/{empresa_id}/{cobranca_id}")
+def gerar_pix(empresa_id: str, cobranca_id: str):
 
     ref = (
         db.collection("empresas")
@@ -307,25 +343,41 @@ def confirmar_pagamento(empresa_id: str, cobranca_id: str):
     if not doc.exists:
         raise HTTPException(404, "Cobrança não encontrada")
 
-    dados = doc.to_dict()
-    cliente_id = dados["cliente_id"]
+    cobranca = doc.to_dict()
 
-    ref.update({
-        "status": "PAGO",
-        "status_gateway": "PAGO",
-        "data_pagamento": datetime.utcnow()
-    })
+    try:
 
-    (
-        db.collection("empresas")
-        .document(empresa_id)
-        .collection("clientes")
-        .document(cliente_id)
-        .update({"status": "ATIVO"})
-    )
+        # ==============================
+        # BUSCAR GATEWAY ATIVO
+        # ==============================
 
-    return {"message": "Pagamento confirmado"}
+        gateway = GatewayService(empresa_id)
 
+        if gateway.tipo() == "banco_brasil":
+
+            banco = BancoBBPix(empresa_id)
+
+            pix = banco.gerar_pix(
+                valor=cobranca["valor"],
+                descricao=f"Mensalidade {cobranca['cliente_nome']}"
+            )
+
+            ref.update({
+                "gateway": "BANCO_BRASIL",
+                "pix_copia_cola": pix.get("pixCopiaECola"),
+                "txid": pix.get("txid"),
+                "status_gateway": "GERADO"
+            })
+
+            return {
+                "message": "PIX gerado",
+                "pix": pix
+            }
+
+        raise Exception("Gateway não suportado")
+
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
 # ==============================
 # BLOQUEIO AUTOMÁTICO
@@ -362,4 +414,171 @@ def bloqueio_automatico(empresa_id: str):
 
     return {
         "clientes_bloqueados": clientes_bloqueados
+    }
+
+# ==============================
+# GERAR BOLETO
+# ==============================
+@router.post("/gerar-boleto/{empresa_id}/{cobranca_id}")
+def gerar_boleto(empresa_id: str, cobranca_id: str):
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .document(cobranca_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cobrança não encontrada")
+
+    cobranca = doc.to_dict()
+
+    try:
+
+        boleto_service = BoletoService(empresa_id)
+
+        boleto = boleto_service.gerar_boleto(cobranca)
+
+        ref.update({
+            "gateway": "BOLETO",
+            "linha_digitavel": boleto["linha_digitavel"],
+            "nosso_numero": boleto["nosso_numero"],
+            "boleto_pdf": boleto["pdf_url"],
+            "status_gateway": "GERADO"
+        })
+
+        return boleto
+
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+
+# ==============================
+# DETALHES DA COBRANÇA
+# ==============================
+@router.get("/detalhes/{empresa_id}/{cobranca_id}")
+def detalhes_cobranca(empresa_id: str, cobranca_id: str):
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .document(cobranca_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(404, "Cobrança não encontrada")
+
+    return doc.to_dict()
+
+
+# ==============================
+# GERAR CARNÊ
+# ==============================
+
+@router.post("/gerar-carne/{empresa_id}/{cliente_id}")
+def gerar_carne(
+    empresa_id: str,
+    cliente_id: str,
+    parcelas: int = 12
+):
+
+    empresa_ref = db.collection("empresas").document(empresa_id)
+
+    # ==============================
+    # BUSCAR CLIENTE
+    # ==============================
+
+    cliente_doc = (
+        empresa_ref
+        .collection("clientes")
+        .document(cliente_id)
+        .get()
+    )
+
+    if not cliente_doc.exists:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    cliente = cliente_doc.to_dict()
+
+    # ==============================
+    # BUSCAR CONTRATO DO CLIENTE
+    # ==============================
+
+    contratos = (
+        empresa_ref
+        .collection("contratos")
+        .where("cliente_id", "==", cliente_id)
+        .limit(1)
+        .stream()
+    )
+
+    contrato = None
+    contrato_id = None
+
+    for doc in contratos:
+        contrato = doc.to_dict()
+        contrato_id = doc.id
+
+    if not contrato:
+        raise HTTPException(400, "Contrato não encontrado")
+
+    valor = contrato.get("valor_mensal")
+
+    if not valor:
+        raise HTTPException(400, "Contrato sem valor mensal")
+
+    # ==============================
+    # GERAR PARCELAS
+    # ==============================
+
+    cobrancas_criadas = []
+
+    agora = datetime.utcnow()
+
+    for i in range(parcelas):
+
+        vencimento = agora + timedelta(days=30 * i)
+
+        cobranca_id = str(uuid.uuid4())
+
+        cobranca = {
+            "id": cobranca_id,
+            "cliente_id": cliente_id,
+            "cliente_nome": cliente["nome"],
+            "contrato_id": contrato_id,
+            "valor": valor,
+            "status": "PENDENTE",
+            "tipo": "CARNE",
+            "parcela": i + 1,
+            "total_parcelas": parcelas,
+            "criado_em": datetime.utcnow(),
+            "vencimento": vencimento,
+
+            "gateway": None,
+            "gateway_id": None,
+            "linha_digitavel": None,
+            "pix_qrcode": None,
+            "pix_copia_cola": None,
+            "status_gateway": None
+        }
+
+        empresa_ref.collection("cobrancas").document(cobranca_id).set(cobranca)
+
+        cobrancas_criadas.append(cobranca_id)
+
+    # ==============================
+    # RETORNO
+    # ==============================
+
+    return {
+        "parcelas": parcelas,
+        "cliente": cliente["nome"],
+        "valor_parcela": valor,
+        "cobrancas_criadas": cobrancas_criadas
     }

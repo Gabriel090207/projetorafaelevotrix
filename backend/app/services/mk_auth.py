@@ -65,7 +65,7 @@ class MKAuth:
         self.token = data.get("token")
 
     # ==============================
-    # HEADERS COM TOKEN
+    # HEADERS
     # ==============================
 
     def headers(self):
@@ -86,17 +86,12 @@ class MKAuth:
 
         url = f"{self.base_url}/api/cliente/listar/pagina={pagina}"
 
-        try:
-
-            response = requests.get(
-                url,
-                headers=self.headers(),
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.get(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -111,17 +106,12 @@ class MKAuth:
 
         url = f"{self.base_url}/api/cliente/show/{login}"
 
-        try:
-
-            response = requests.get(
-                url,
-                headers=self.headers(),
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.get(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -143,18 +133,13 @@ class MKAuth:
             "cpf": cpf
         }
 
-        try:
-
-            response = requests.post(
-                url,
-                headers=self.headers(),
-                json=payload,
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.post(
+            url,
+            headers=self.headers(),
+            json=payload,
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -169,18 +154,13 @@ class MKAuth:
 
         url = f"{self.base_url}/api/cliente/editar"
 
-        try:
-
-            response = requests.put(
-                url,
-                headers=self.headers(),
-                json=payload,
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.put(
+            url,
+            headers=self.headers(),
+            json=payload,
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -195,17 +175,12 @@ class MKAuth:
 
         url = f"{self.base_url}/api/cliente/{cliente_id}"
 
-        try:
-
-            response = requests.delete(
-                url,
-                headers=self.headers(),
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.delete(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -220,17 +195,12 @@ class MKAuth:
 
         url = f"{self.base_url}/api/online"
 
-        try:
-
-            response = requests.get(
-                url,
-                headers=self.headers(),
-                verify=False,
-                timeout=10
-            )
-
-        except requests.exceptions.Timeout:
-            return {"ok": False, "erro": "Timeout MKAuth"}
+        response = requests.get(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
 
         if response.status_code != 200:
             return {"ok": False, "erro": response.text}
@@ -251,3 +221,43 @@ class MKAuth:
             })
 
         return clientes
+
+    # ==============================
+    # BLOQUEAR CLIENTE
+    # ==============================
+
+    def bloquear_cliente(self, login):
+
+        url = f"{self.base_url}/api/cliente/bloquear/{login}"
+
+        response = requests.post(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return {"ok": False, "erro": response.text}
+
+        return response.json()
+
+    # ==============================
+    # LIBERAR CLIENTE
+    # ==============================
+
+    def liberar_cliente(self, login):
+
+        url = f"{self.base_url}/api/cliente/desbloquear/{login}"
+
+        response = requests.post(
+            url,
+            headers=self.headers(),
+            verify=False,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return {"ok": False, "erro": response.text}
+
+        return response.json()

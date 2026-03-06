@@ -25,6 +25,25 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+function normalizarStatus(status?: string) {
+  const s = status?.toLowerCase();
+
+  if (!s) return "desconhecido";
+
+  if (["pendente", "aberto", "em_aberto", "em aberto"].includes(s))
+    return "aberto";
+
+  if (["pago", "paid"].includes(s))
+    return "pago";
+
+  if (["cancelado", "cancelled"].includes(s))
+    return "cancelado";
+
+  if (["vencido", "overdue"].includes(s))
+    return "vencido";
+
+  return s;
+}
 
 interface Cliente {
   id: string;
@@ -120,12 +139,12 @@ const clientesBloqueados = clientes.filter(
 
   // ✅ COBRANÇAS (somente status "aberto")
   const totalPendentes = cobrancas.filter(
-    (c) => c.status?.toLowerCase() === "aberto"
-  );
+  (c) => normalizarStatus(c.status) === "aberto"
+);
 
-  const totalPagas = cobrancas.filter(
-    (c) => c.status?.toLowerCase() === "pago"
-  );
+ const totalPagas = cobrancas.filter(
+  (c) => normalizarStatus(c.status) === "pago"
+);
 
   const valorEmAberto = totalPendentes.reduce(
     (acc, curr) => acc + curr.valor,

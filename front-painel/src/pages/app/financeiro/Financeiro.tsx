@@ -20,7 +20,7 @@ interface Cobranca {
   cliente_nome: string;
   valor: number;
   status: string;
-  data_vencimento: string;
+  vencimento: any;
 }
 
 // 🔥 CACHE GLOBAL EM MEMÓRIA
@@ -53,10 +53,22 @@ const Financeiro = () => {
     carregarCobrancas();
   }, []);
 
-  function formatarData(data: string) {
-    const d = new Date(data);
+ function formatarData(data: any) {
+  if (!data) return "-";
+
+  // 🔥 Firestore Timestamp
+  if (data.seconds) {
+    const d = new Date(data.seconds * 1000);
     return d.toLocaleDateString("pt-BR");
   }
+
+  // 🔥 string ISO ou Date normal
+  const d = new Date(data);
+
+  if (isNaN(d.getTime())) return "-";
+
+  return d.toLocaleDateString("pt-BR");
+}
 
   function formatarValor(valor: number) {
     return valor.toLocaleString("pt-BR", {
@@ -64,6 +76,26 @@ const Financeiro = () => {
       currency: "BRL",
     });
   }
+
+  function normalizarStatus(status?: string) {
+  const s = status?.toLowerCase();
+
+  if (!s) return "desconhecido";
+
+  if (["pendente", "aberto", "em_aberto", "em aberto"].includes(s))
+    return "aberto";
+
+  if (["pago", "paid"].includes(s))
+    return "pago";
+
+  if (["cancelado", "cancelled"].includes(s))
+    return "cancelado";
+
+  if (["vencido", "overdue"].includes(s))
+    return "vencido";
+
+  return s;
+}
 
   return (
     <div className="financeiro-page">
@@ -86,8 +118,8 @@ const Financeiro = () => {
   <span>Em Aberto</span>
   <strong>
     {cobrancas.filter(
-      (c) => c.status?.toLowerCase() === "aberto"
-    ).length}
+  (c) => normalizarStatus(c.status) === "aberto"
+).length}
   </strong>
 </div>
 
@@ -95,7 +127,7 @@ const Financeiro = () => {
           <span>Pagas</span>
           <strong>
             {cobrancas.filter(
-  (c) => c.status?.toLowerCase() === "pago"
+  (c) => normalizarStatus(c.status) === "pago"
 ).length}
           </strong>
         </div>
@@ -147,7 +179,7 @@ const Financeiro = () => {
   {cobrancas.map((cobranca) => (
     <tr key={cobranca.id}>
       <td>{cobranca.cliente_nome}</td>
-      <td>{formatarData(cobranca.data_vencimento)}</td>
+    <td>{formatarData(cobranca.vencimento)}</td>
       <td>{formatarValor(cobranca.valor)}</td>
 
       <td>
@@ -160,11 +192,11 @@ const Financeiro = () => {
               : "open"
           }`}
         >
-          {cobranca.status?.toLowerCase() === "pago"
-            ? "Pago"
-            : cobranca.status?.toLowerCase() === "cancelado"
-            ? "Cancelado"
-            : "Em aberto"}
+          {normalizarStatus(cobranca.status) === "pago"
+  ? "Pago"
+  : normalizarStatus(cobranca.status) === "cancelado"
+  ? "Cancelado"
+  : "Em aberto"}
         </span>
       </td>
 

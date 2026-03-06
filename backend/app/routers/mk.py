@@ -4,7 +4,32 @@ from app.core.deps import require_empresa_access
 
 router = APIRouter(prefix="/mk", tags=["MK-AUTH"])
 
+# ==============================
+# TESTAR INTEGRAÇÃO MK-AUTH
+# ==============================
 
+@router.get("/test")
+def testar_mk(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+
+    try:
+
+        mk = MKAuth(empresa_id)
+
+        mk.autenticar()
+
+        return {
+            "status": "ok",
+            "mensagem": "MKAuth conectado com sucesso"
+        }
+
+    except Exception as e:
+
+        return {
+            "status": "erro",
+            "erro": str(e)
+        }
 # ==============================
 # LISTAR CLIENTES DO MK
 # ==============================
