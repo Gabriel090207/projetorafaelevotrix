@@ -3,42 +3,137 @@ from app.core.firebase import db
 
 
 class ReceitaNetService:
+
     def __init__(self, empresa_id: str):
+
         docs = (
-            db.collection("integracoes")
-            .where("empresa_id", "==", empresa_id)
+            db.collection("empresas")
+            .document(empresa_id)
+            .collection("integracoes")
             .where("tipo", "==", "receitanet")
             .where("ativo", "==", True)
             .stream()
         )
 
         config = None
+
         for doc in docs:
             config = doc.to_dict()
 
         if not config:
-            raise Exception("Integração ReceitaNet não configurada")
+            raise Exception("Integração Receitanet não configurada")
 
         dados = config["config"]
 
-        self.base_url = dados["base_url"].rstrip("/")
-        self.token = dados["token"]
+        self.base_url = dados["url"].rstrip("/")
+        self.client_id = dados["client_id"]
+        self.client_secret = dados["client_secret"]
 
-    # ==============================
-    # ENVIAR MENSAGEM
-    # ==============================
-    def enviar_mensagem(self, numero: str, mensagem: str):
-        url = f"{self.base_url}/send-message"
+        self.token = None
+
+    # ==========================
+    # AUTENTICAR
+    # ==========================
+
+    def autenticar(self):
+
+        url = f"{self.base_url}/auth"
 
         payload = {
-            "token": self.token,
-            "numero": numero,
-            "mensagem": mensagem
+            "client_id": self.client_id,
+            "client_secret": self.client_secret
         }
 
-        r = requests.post(url, json=payload, timeout=30)
+        response = requests.post(
+            url,
+            json=payload,
+            timeout=10
+        )
 
-        if r.status_code != 200:
-            return {"ok": False, "erro": r.text}
+        if response.status_code != 200:
+            raise Exception("Erro ao autenticar Receitanet")
 
-        return {"ok": True, "dados": r.json()}
+        data = response.json()
+
+        self.token = data.get("access_token")
+
+    # ==========================
+    # HEADERS
+    # ==========================
+
+    def headers(self):
+
+        if not self.token:
+            self.autenticar()
+
+        return {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json"
+        }
+
+    # ==========================
+    # EMITIR NOTA
+    # ==========================
+
+    def emitir_nota(self, payload):
+
+        url = f"{self.base_url}/nfse"
+
+        response = requests.post(
+            url,
+            headers=self.headers(),
+            json=payload,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return {
+                "ok": False,
+                "erro": response.text
+            }
+
+        return response.json()
+
+    # ==========================
+    # CONSULTAR NOTA
+    # ==========================
+
+    def consultar_nota(self, nota_id):
+
+        url = f"{self.base_url}/nfse/{nota_id}"
+
+        response = requests.get(
+            url,
+            headers=self.headers(),
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return {
+                "ok": False,
+                "erro": response.text
+            }
+
+        return response.json()
+
+    # ==========================
+    # CANCELAR NOTA
+    # ==========================
+
+    def cancelar_nota(self, nota_id):
+
+        url = f"{self.base_url}/nfse/{nota_id}"
+
+        response = requests.delete(
+            url,
+            headers=self.headers(),
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return {
+                "ok": False,
+                "erro": response.text
+            }
+
+        return response.json()

@@ -37,6 +37,8 @@ from app.routers import ordens_servico
 # 💰 Financeiro
 from app.routers import cobrancas
 from app.routers import receitanet
+from app.routers import nf
+from app.routers import nfcom
 
 # 🌐 Rede
 from app.routers import monitoramento
@@ -47,6 +49,9 @@ from app.routers import pons
 from app.routers import onus
 from app.routers import ctos
 from app.routers import mapa_ftth
+from app.routers import logs
+from app.routers import clientes_online
+from app.routers import equipamentos
 
 # 📦 Produtos
 from app.routers import planos
@@ -75,6 +80,9 @@ app.include_router(ordens_servico.router)
 # 💰 Financeiro
 app.include_router(cobrancas.router)
 app.include_router(receitanet.router)
+app.include_router(nf.router)
+app.include_router(nfcom.router)
+
 
 # 🌐 Rede
 app.include_router(monitoramento.router)
@@ -85,6 +93,9 @@ app.include_router(pons.router)
 app.include_router(onus.router)
 app.include_router(ctos.router)
 app.include_router(mapa_ftth.router)
+app.include_router(logs.router)
+app.include_router(clientes_online.router)
+app.include_router(equipamentos.router)
 
 
 
