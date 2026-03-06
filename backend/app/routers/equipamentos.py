@@ -200,3 +200,61 @@ def status_equipamento(
             resultado["erro_mikrotik"] = str(e)
 
     return resultado
+
+
+
+# ===============================
+# STATUS GERAL DOS EQUIPAMENTOS
+# ===============================
+
+@router.get("/status/all")
+def status_geral_equipamentos(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+
+    docs = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("equipamentos")
+        .stream()
+    )
+
+    total = 0
+    online = 0
+    offline = 0
+
+    mikrotiks = 0
+    olts = 0
+    onus = 0
+
+    for doc in docs:
+
+        total += 1
+
+        eq = doc.to_dict()
+
+        tipo = eq.get("tipo")
+        status = eq.get("status")
+
+        if status == "ativo":
+            online += 1
+        else:
+            offline += 1
+
+        if tipo == "mikrotik":
+            mikrotiks += 1
+
+        if tipo == "olt":
+            olts += 1
+
+        if tipo == "onu":
+            onus += 1
+
+    return {
+        "total_equipamentos": total,
+        "equipamentos_online": online,
+        "equipamentos_offline": offline,
+        "mikrotiks": mikrotiks,
+        "olts": olts,
+        "onus": onus
+    }

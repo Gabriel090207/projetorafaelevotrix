@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 import psutil
 from datetime import datetime
+from app.core.firebase import db
 
 from app.core.deps import require_empresa_access
 from app.services.mk_auth import MKAuth
@@ -103,3 +104,61 @@ def monitoramento_empresa(empresa_id: str):
         }
 
     ]
+
+
+# ===============================
+# DASHBOARD NOC
+# ===============================
+
+@router.get("/noc")
+def dashboard_noc(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+
+    equipamentos_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("equipamentos")
+        .stream()
+    )
+
+    total_equipamentos = 0
+    mikrotiks = 0
+    olts = 0
+    onus = 0
+
+    for doc in equipamentos_ref:
+
+        total_equipamentos += 1
+        eq = doc.to_dict()
+
+        tipo = eq.get("tipo")
+
+        if tipo == "mikrotik":
+            mikrotiks += 1
+
+        if tipo == "olt":
+            olts += 1
+
+        if tipo == "onu":
+            onus += 1
+
+    clientes_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .stream()
+    )
+
+    total_clientes = 0
+
+    for _ in clientes_ref:
+        total_clientes += 1
+
+    return {
+        "equipamentos": total_equipamentos,
+        "mikrotiks": mikrotiks,
+        "olts": olts,
+        "onus": onus,
+        "clientes": total_clientes
+    }
