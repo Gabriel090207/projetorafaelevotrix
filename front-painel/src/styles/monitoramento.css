@@ -191,3 +191,48 @@
   }
 
 }
+
+
+/* ================= NOC CARDS ================= */
+
+.monitoramento-kpis {
+  margin-top: 0px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.monitoramento-kpis .kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.monitoramento-kpis .kpi-card span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.monitoramento-kpis .kpi-card strong {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* Gradientes padrão sistema */
+
+.monitoramento-kpis .kpi-card.primary {
+  background: linear-gradient(135deg, #0f766e, #042f2e);
+}
+
+.monitoramento-kpis .kpi-card.warning {
+  background: linear-gradient(135deg, #78350f, #451a03);
+}
+
+.monitoramento-kpis .kpi-card.danger {
+  background: linear-gradient(135deg, #9d0606, #450a0a);
+}

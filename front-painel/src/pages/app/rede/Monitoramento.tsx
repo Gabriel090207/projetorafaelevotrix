@@ -22,11 +22,20 @@ interface Equipamento {
   trafego: number;
 }
 
+interface NocStats {
+  equipamentos: number;
+  mikrotiks: number;
+  olts: number;
+  onus: number;
+  clientes: number;
+}
+
 let monitoramentoCache: Equipamento[] | null = null;
 
 const Monitoramento = () => {
 
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
+  const [noc, setNoc] = useState<NocStats | null>(null);
 
   async function carregarMonitoramento() {
 
@@ -34,14 +43,18 @@ const Monitoramento = () => {
 
       if (monitoramentoCache) {
         setEquipamentos(monitoramentoCache);
-        return;
+      } else {
+
+        const response = await api.get(`/monitoramento/empresa/${EMPRESA_ID}`);
+
+        monitoramentoCache = response.data;
+
+        setEquipamentos(response.data);
       }
 
-      const response = await api.get(`/monitoramento/empresa/${EMPRESA_ID}`);
+      const nocRes = await api.get(`/monitoramento/noc`);
 
-      monitoramentoCache = response.data;
-
-      setEquipamentos(response.data);
+      setNoc(nocRes.data);
 
     } catch (error) {
       console.error("Erro monitoramento", error);
@@ -74,6 +87,40 @@ const Monitoramento = () => {
 
       </div>
 
+
+      {/* KPI NOC */}
+
+      <div className="monitoramento-kpis">
+
+        <div className="kpi-card primary">
+          <span>Equipamentos</span>
+          <strong>{noc?.equipamentos || 0}</strong>
+        </div>
+
+        <div className="kpi-card warning">
+          <span>Mikrotiks</span>
+          <strong>{noc?.mikrotiks || 0}</strong>
+        </div>
+
+        <div className="kpi-card primary">
+          <span>OLTs</span>
+          <strong>{noc?.olts || 0}</strong>
+        </div>
+
+        <div className="kpi-card danger">
+          <span>ONUs</span>
+          <strong>{noc?.onus || 0}</strong>
+        </div>
+
+        <div className="kpi-card primary">
+          <span>Clientes</span>
+          <strong>{noc?.clientes || 0}</strong>
+        </div>
+
+      </div>
+
+
+      {/* GRID EQUIPAMENTOS */}
 
       <div className="monitoramento-grid">
 
