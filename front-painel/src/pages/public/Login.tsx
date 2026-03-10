@@ -2,94 +2,164 @@ import { useState } from "react";
 import "../../styles/login.css";
 import { useNavigate } from "react-router-dom";
 
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider } from "../../services/firebase";
 
-
 const Login = () => {
+
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
   const [isRegister, setIsRegister] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
 
   const navigate = useNavigate();
 
+  // =========================
+  // LOGIN EMAIL / SENHA
+  // =========================
 
-  return (
-    <div className="login-page">
-     <div className={`login-card ${isRegister ? "register-mode" : ""} ${isSwitching ? "switching" : ""}`}>
-
-        {/* FORMULÁRIO */}
-        <div className="form-container">
-          {!isRegister ? (
-  <>
-    <h2>Login</h2>
-    <p>Acesse sua conta</p>
-
-    <input placeholder="E-mail" />
-    <input placeholder="Senha" type="password" />
-
-    <a className="forgot-password">Esqueceu sua senha?</a>
-
-    <button
-  className="login-button"
-  onClick={() => navigate("/dashboard")}
->
-  Entrar
-</button>
-
-
-    <div className="divider">
-      <span>ou</span>
-    </div>
-
-    <div className="social-login">
-   <button
-  className="social-button google"
-  onClick={async () => {
+  async function loginEmail() {
     try {
-     const result = await signInWithPopup(auth, googleProvider);
-const token = await result.user.getIdToken();
 
-localStorage.setItem("token", token);
+      const result = await signInWithEmailAndPassword(auth, email, senha);
 
+      const token = await result.user.getIdToken();
 
+      localStorage.setItem("token", token);
 
-// 🔥 Salva usuário no cache
-localStorage.setItem(
-  "user",
-  JSON.stringify({
-    name: result.user.displayName,
-    email: result.user.email,
-    photo: result.user.photoURL
-  })
-);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-// 🔥 Chama backend para sincronizar usuário
-const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
-  method: "POST",
-  headers: {
-    "Authorization": `Bearer ${token}`
+      const data = await response.json();
+
+      localStorage.setItem("empresa_id", data.empresa_id);
+      localStorage.setItem("perfil", data.perfil);
+
+      redirecionar(data.perfil);
+
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao fazer login");
+    }
   }
-});
 
-const data = await response.json();
+  // =========================
+  // LOGIN GOOGLE
+  // =========================
 
-// 🔥 SALVA EMPRESA_ID
-localStorage.setItem("empresa_id", data.empresa_id);
+  async function loginGoogle() {
+    try {
 
-navigate("/dashboard");
+      const result = await signInWithPopup(auth, googleProvider);
+
+      const token = await result.user.getIdToken();
+
+      localStorage.setItem("token", token);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: result.user.displayName,
+          email: result.user.email,
+          photo: result.user.photoURL
+        })
+      );
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      localStorage.setItem("empresa_id", data.empresa_id);
+      localStorage.setItem("perfil", data.perfil);
+
+      redirecionar(data.perfil);
+
     } catch (error) {
       console.error("Erro login Google:", error);
       alert("Erro ao fazer login com Google");
     }
-  }}
->
-  <span>G</span>
-</button>
-    
-    </div>
-  </>
-) : (
+  }
 
+  // =========================
+  // REDIRECIONAMENTO
+  // =========================
+
+  function redirecionar(perfil: string) {
+
+    if (perfil === "admin") {
+      navigate("/dashboard");
+    }
+
+    if (perfil === "cliente") {
+      navigate("/cliente/dashboard");
+    }
+
+    if (perfil === "tecnico") {
+      navigate("/tecnico/dashboard");
+    }
+
+  }
+
+  return (
+    <div className="login-page">
+
+      <div className={`login-card ${isRegister ? "register-mode" : ""} ${isSwitching ? "switching" : ""}`}>
+
+        <div className="form-container">
+
+          {!isRegister ? (
+            <>
+              <h2>Login</h2>
+              <p>Acesse sua conta</p>
+
+              <input
+                placeholder="E-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                placeholder="Senha"
+                type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+              />
+
+              <a className="forgot-password">Esqueceu sua senha?</a>
+
+              <button
+                className="login-button"
+                onClick={loginEmail}
+              >
+                Entrar
+              </button>
+
+              <div className="divider">
+                <span>ou</span>
+              </div>
+
+              <div className="social-login">
+
+                <button
+                  className="social-button google"
+                  onClick={loginGoogle}
+                >
+                  <span>G</span>
+                </button>
+
+              </div>
+            </>
+          ) : (
             <>
               <h2>Criar conta</h2>
               <p>Preencha os dados abaixo</p>
@@ -101,13 +171,17 @@ navigate("/dashboard");
               <button className="login-button">Cadastrar</button>
             </>
           )}
+
         </div>
 
         {/* PAINEL VERMELHO */}
+
         <div className="overlay-container">
+
           {!isRegister ? (
             <>
               <h1>Bem-vindo!</h1>
+
               <p>
                 Nossa missão é simplificar,
                 <br />
@@ -116,14 +190,13 @@ navigate("/dashboard");
 
               <button
                 className="ghost-button"
-               onClick={() => {
-  setIsSwitching(true);
-  setTimeout(() => {
-    setIsRegister(true);
-    setIsSwitching(false);
-  }, 450);
-}}
-
+                onClick={() => {
+                  setIsSwitching(true);
+                  setTimeout(() => {
+                    setIsRegister(true);
+                    setIsSwitching(false);
+                  }, 450);
+                }}
               >
                 Cadastre-se
               </button>
@@ -131,6 +204,7 @@ navigate("/dashboard");
           ) : (
             <>
               <h1>Bem-vindo de volta!</h1>
+
               <p>
                 Já possui uma conta?
                 <br />
@@ -139,19 +213,19 @@ navigate("/dashboard");
 
               <button
                 className="ghost-button"
-              onClick={() => {
-  setIsSwitching(true);
-  setTimeout(() => {
-    setIsRegister(false);
-    setIsSwitching(false);
-  }, 450);
-}}
-
+                onClick={() => {
+                  setIsSwitching(true);
+                  setTimeout(() => {
+                    setIsRegister(false);
+                    setIsSwitching(false);
+                  }, 450);
+                }}
               >
                 Login
               </button>
             </>
           )}
+
         </div>
 
       </div>

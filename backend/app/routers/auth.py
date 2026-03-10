@@ -33,14 +33,18 @@ def sync_user(user=Depends(get_current_user)):
 
     empresas_ref = db.collection("empresas")
 
-    # =========================
-    # VERIFICAR SE USUÁRIO JÁ EXISTE EM ALGUMA EMPRESA
-    # =========================
     for empresa in empresas_ref.stream():
-        user_doc = empresa.reference.collection("usuarios").document(uid).get()
 
-        if user_doc.exists:
-            data = user_doc.to_dict()
+        usuarios_ref = (
+            empresa.reference
+            .collection("usuarios")
+            .where("email", "==", email)
+            .stream()
+        )
+
+        for usuario in usuarios_ref:
+
+            data = usuario.to_dict()
 
             return {
                 "message": "Usuário já existente",
@@ -48,24 +52,17 @@ def sync_user(user=Depends(get_current_user)):
                 "perfil": data.get("perfil", "usuario")
             }
 
-    # =========================
-    # PRIMEIRO LOGIN → CRIAR EMPRESA
-    # =========================
+    # se não encontrar cria empresa
     empresa_id = str(uuid.uuid4())
 
-    # Criar empresa
     db.collection("empresas").document(empresa_id).set({
         "nome": f"{nome} Telecom",
         "plano": "trial",
         "status": "ativa",
-        "cnpj": "",
-        "telefone": "",
         "email": email,
-        "endereco": "",
         "criado_em": datetime.utcnow().isoformat()
     })
 
-    # Criar usuário ADMIN dentro da empresa
     db.collection("empresas") \
       .document(empresa_id) \
       .collection("usuarios") \
@@ -79,11 +76,10 @@ def sync_user(user=Depends(get_current_user)):
       })
 
     return {
-        "message": "Usuário criado com sucesso",
+        "message": "Usuário criado",
         "empresa_id": empresa_id,
         "perfil": "admin"
     }
-
 
 # =========================
 # PEGAR DADOS DO USUÁRIO LOGADO
@@ -92,23 +88,31 @@ def sync_user(user=Depends(get_current_user)):
 def get_me(user=Depends(get_current_user)):
 
     uid = user["uid"]
+    email = user.get("email")
+
     empresas_ref = db.collection("empresas")
 
     for empresa in empresas_ref.stream():
-        user_doc = empresa.reference.collection("usuarios").document(uid).get()
 
-        if user_doc.exists:
-            data = user_doc.to_dict()
+        usuarios_ref = (
+            empresa.reference
+            .collection("usuarios")
+            .where("email", "==", email)
+            .stream()
+        )
 
+        for usuario in usuarios_ref:
+
+            data = usuario.to_dict()
             empresa_data = empresa.to_dict()
 
             return {
                 "uid": uid,
-                "email": user.get("email"),
+                "email": email,
+                "nome": data.get("nome"),
                 "empresa_id": empresa.id,
                 "empresa_nome": empresa_data.get("nome"),
                 "perfil": data.get("perfil", "usuario")
             }
 
-    raise HTTPException(404, "Usuário não encontrado")
-
+    raise HTTPException(status_code=404, detail="Usuário não encontrado")

@@ -289,36 +289,6 @@ def regua_cobranca(empresa_id: str):
     return avisos
 
 
-# ==============================
-# GERAR PIX
-# ==============================
-@router.post("/gerar-pix/{empresa_id}/{cobranca_id}")
-def gerar_pix(empresa_id: str, cobranca_id: str):
-
-    ref = (
-        db.collection("empresas")
-        .document(empresa_id)
-        .collection("cobrancas")
-        .document(cobranca_id)
-    )
-
-    doc = ref.get()
-
-    if not doc.exists:
-        raise HTTPException(404, "Cobrança não encontrada")
-
-    pix_code = f"PIX-{uuid.uuid4().hex}"
-
-    ref.update({
-        "gateway": "PIX_TESTE",
-        "pix_copia_cola": pix_code,
-        "status_gateway": "GERADO"
-    })
-
-    return {
-        "message": "PIX gerado",
-        "pix_code": pix_code
-    }
 
 
 from app.services.gateway_service import GatewayService
@@ -540,6 +510,12 @@ def gerar_carne(
     cobrancas_criadas = []
 
     agora = datetime.utcnow()
+
+    # ==============================
+    # CARREGAR GATEWAY DA EMPRESA
+    # ==============================
+
+    gateway = GatewayService(empresa_id)
 
     for i in range(parcelas):
 

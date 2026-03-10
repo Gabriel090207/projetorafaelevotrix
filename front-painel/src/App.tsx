@@ -57,6 +57,17 @@ import Configuracoes from "./pages/app/admin/Configuracoes";
 import Chatbot from "./pages/app/chatbot/Chatbot";
 
 
+
+
+
+/* ============= CLIENTE ======================= */
+import DashboardCliente from "../cliente/pages/DashboardCliente";
+import LayoutCliente from "../cliente/components/LayoutCliente";
+import FaturasCliente from "../cliente/pages/FaturasCliente";
+import InternetCliente from "../cliente/pages/InternetCliente";
+import SuporteCliente from "../cliente/pages/SuporteCliente";
+
+
 function App() {
 
   const Protected = ({ children }: { children: React.ReactNode }) => (
@@ -64,6 +75,13 @@ function App() {
       <Layout>{children}</Layout>
     </PrivateRoute>
   );
+
+
+  const ProtectedCliente = ({ children }: { children: React.ReactNode }) => (
+  <PrivateRoute>
+    <LayoutCliente>{children}</LayoutCliente>
+  </PrivateRoute>
+);
 
   return (
     <Routes>
@@ -140,6 +158,41 @@ function App() {
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
 
+
+
+     <Route
+  path="/cliente/dashboard"
+  element={
+    <ProtectedCliente>
+      <DashboardCliente />
+    </ProtectedCliente>
+  }
+/>
+<Route
+ path="/cliente/faturas"
+ element={
+   <ProtectedCliente>
+     <FaturasCliente />
+   </ProtectedCliente>
+ }
+/>
+<Route
+ path="/cliente/internet"
+ element={
+   <ProtectedCliente>
+     <InternetCliente />
+   </ProtectedCliente>
+ }
+/>
+
+<Route
+ path="/cliente/suporte"
+ element={
+   <ProtectedCliente>
+     <SuporteCliente />
+   </ProtectedCliente>
+ }
+/>
     </Routes>
   );
 }

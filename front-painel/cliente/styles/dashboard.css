@@ -1,0 +1,154 @@
+.cliente-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cliente-dashboard h1 {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* ================= KPIs ================= */
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 20px;
+  border-radius: 16px;
+
+  color: white;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+
+  gap: 6px;
+  min-height: 110px;
+}
+
+.kpi-card span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.kpi-card strong {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.kpi-card small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* CORES */
+
+.kpi-card.primary {
+  background: linear-gradient(135deg, #0f766e, #042f2e);
+}
+
+.kpi-card.warning {
+  background: linear-gradient(135deg, #78350f, #451a03);
+}
+
+.kpi-card.danger {
+  background: linear-gradient(135deg, #9d0606, #450a0a);
+}
+
+/* ================= BOTÃO ================= */
+
+.btn-pagar {
+  margin-top: 8px;
+  background: white;
+  color: #111827;
+  border: none;
+
+  padding: 8px 14px;
+  border-radius: 8px;
+
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+
+  width: fit-content;
+}
+
+.btn-pagar:hover {
+  transform: scale(1.03);
+}
+
+/* ================= FATURAS ================= */
+
+.dashboard-faturas {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.dashboard-faturas h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.faturas-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.faturas-table th,
+.faturas-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.faturas-table th {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.faturas-table tr:hover {
+  background: #f9fafb;
+}
+
+/* STATUS */
+
+.status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.open {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.overdue {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 900px) {
+  .dashboard-kpis {
+    grid-template-columns: 1fr;
+  }
+}
