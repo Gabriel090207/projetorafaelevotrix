@@ -558,3 +558,36 @@ def gerar_carne(
         "valor_parcela": valor,
         "cobrancas_criadas": cobrancas_criadas
     }
+
+
+# ==============================
+# FATURAS DO CLIENTE
+# ==============================
+
+@router.get("/cliente/{empresa_id}/{cliente_id}")
+def faturas_cliente(empresa_id: str, cliente_id: str):
+
+    docs = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .where("cliente_id", "==", cliente_id)
+        .stream()
+    )
+
+    faturas = []
+
+    for doc in docs:
+
+        data = doc.to_dict()
+
+        faturas.append({
+            "id": data.get("id"),
+            "valor": data.get("valor"),
+            "vencimento": data.get("vencimento").strftime("%d/%m/%Y") if data.get("vencimento") else None,
+            "status": data.get("status"),
+            "linha_digitavel": data.get("linha_digitavel"),
+            "pix_copia_cola": data.get("pix_copia_cola")
+        })
+
+    return faturas

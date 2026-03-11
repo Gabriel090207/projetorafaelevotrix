@@ -51,6 +51,22 @@ const DashboardCliente = () => {
 
       <div className="dashboard-kpis">
 
+
+          <div className="kpi-card primary">
+          <span>Próxima fatura</span>
+
+          {fatura ? (
+            <>
+              <strong>{formatarValor(fatura.valor)}</strong>
+              
+
+            </>
+          ) : (
+            <strong>Sem faturas</strong>
+          )}
+        </div>
+
+
         <div className="kpi-card danger">
           <span>Status da Internet</span>
           <strong>
@@ -63,106 +79,22 @@ const DashboardCliente = () => {
           <strong>{plano}</strong>
         </div>
 
-        <div className="kpi-card primary">
-          <span>Próxima fatura</span>
-
-          {fatura ? (
-            <>
-              <strong>{formatarValor(fatura.valor)}</strong>
-              <small>Vencimento {fatura.vencimento}</small>
-
-              <button
-                className="btn-pagar"
-                onClick={() => window.open(`/boleto/${fatura.id}`)}
-              >
-                Pagar
-              </button>
-            </>
-          ) : (
-            <strong>Sem faturas</strong>
-          )}
-        </div>
-
-        <div className="kpi-card primary">
-          <span>Velocidade</span>
-          <strong>{velocidade}</strong>
-        </div>
-
-        <div className="kpi-card warning">
-          <span>IP Público</span>
-          <strong>{ipPublico}</strong>
-        </div>
-
-        <div className="kpi-card danger">
-          <span>Chamados</span>
-          <strong>0 abertos</strong>
-        </div>
+      
+      
 
       </div>
 
-      {/* ================= ÚLTIMAS FATURAS ================= */}
+      {/* ================= GRAFICO DE CONSUMO ================= */}
 
-      <div className="dashboard-faturas">
+<div className="dashboard-grafico">
 
-        <h2>Últimas faturas</h2>
+  <h2>Consumo de Internet</h2>
 
-        <table className="faturas-table">
+  <div className="grafico-box">
+    <p>Gráfico de tráfego será exibido aqui</p>
+  </div>
 
-          <thead>
-            <tr>
-              <th>Vencimento</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            {ultimasFaturas.map((f) => (
-              <tr key={f.id}>
-
-                <td>{f.vencimento}</td>
-
-                <td>{formatarValor(f.valor)}</td>
-
-                <td>
-                  <span
-                    className={`status ${
-                      f.status === "pago"
-                        ? "paid"
-                        : f.status === "vencido"
-                        ? "overdue"
-                        : "open"
-                    }`}
-                  >
-                    {f.status}
-                  </span>
-                </td>
-
-                <td>
-                  <button
-                    className="btn-pagar"
-                    onClick={() => window.open(`/boleto/${f.id}`)}
-                  >
-                    Pagar
-                  </button>
-                </td>
-
-              </tr>
-            ))}
-
-            {ultimasFaturas.length === 0 && (
-              <tr>
-                <td colSpan={4}>Nenhuma fatura encontrada.</td>
-              </tr>
-            )}
-
-          </tbody>
-
-        </table>
-
-      </div>
+</div>
 
     </div>
   );

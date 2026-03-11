@@ -9,10 +9,12 @@
   font-weight: 600;
 }
 
+/* ================= TABELA ================= */
+
 .faturas-table-wrapper {
   background: white;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
@@ -25,20 +27,29 @@
 .faturas-table td {
   padding: 14px;
   border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.faturas-table td {
+  overflow: visible;
 }
 
 .faturas-table th {
   font-size: 12px;
   color: #6b7280;
   text-transform: uppercase;
-  text-align: left;
 }
 
 .faturas-table tbody tr:hover {
   background: #f9fafb;
 }
 
-/* status */
+.faturas-table tbody tr {
+  position: relative;
+}
+
+/* ================= STATUS ================= */
 
 .status {
   padding: 4px 10px;
@@ -47,50 +58,94 @@
   font-weight: 600;
 }
 
-.status.pago {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status.aberto {
+.status.open {
   background: #fef3c7;
   color: #92400e;
 }
 
-.status.vencido {
+.status.paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.overdue {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-/* botões */
+.status.cancelled {
+   background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* ================= AÇÕES ================= */
 
 .actions {
+  text-align: center;
+}
+
+/* MENU */
+
+.options-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.options-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
   display: flex;
-  gap: 8px;
-}
-
-.btn-pix {
-  background: #059669;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.btn-boleto {
-  background: #b91c1c;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
+.options-button:hover {
+  background: #e5e7eb;
+}
+
+.options-button svg {
+  font-size: 18px;
+  color: #374151;
+}
+
+.options-menu {
+  position: absolute;
+  right: 0;
+  top: 42px;
+
+  width: 150px;
+
+  background: white;
+  border-radius: 10px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+  padding: 6px;
+
+  z-index: 999999;
+}
+
+
+.option-item {
+  padding: 8px 10px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s ease;
 }
 
-.btn-pix:hover {
-  background: #047857;
+.option-item:hover {
+  background: #f3f4f6;
 }
 
-.btn-boleto:hover {
-  background: #991b1b;
+/* EMPTY */
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  opacity: 0.7;
 }

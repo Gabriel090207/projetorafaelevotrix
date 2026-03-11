@@ -471,6 +471,10 @@ def dashboard_cliente(ctx=Depends(require_empresa_access)):
     empresa_id = ctx["empresa_id"]
     cliente_id = ctx["user_id"]
 
+    # =============================
+    # BUSCAR CLIENTE
+    # =============================
+
     cliente_ref = (
         db.collection("empresas")
         .document(empresa_id)
@@ -485,7 +489,40 @@ def dashboard_cliente(ctx=Depends(require_empresa_access)):
 
     cliente = doc.to_dict()
 
-    # buscar cobranças
+    # =============================
+    # BUSCAR PLANO
+    # =============================
+
+    plano_nome = "-"
+    velocidade = "-"
+
+    plano_id = cliente.get("plano_id")
+
+    if plano_id:
+
+        plano_doc = (
+            db.collection("empresas")
+            .document(empresa_id)
+            .collection("planos")
+            .document(plano_id)
+            .get()
+        )
+
+        if plano_doc.exists:
+
+            plano = plano_doc.to_dict()
+
+            plano_nome = plano.get("nome", "-")
+
+            download = plano.get("velocidade_download", 0)
+            upload = plano.get("velocidade_upload", 0)
+
+            velocidade = f"{download}/{upload} Mbps"
+
+    # =============================
+    # BUSCAR COBRANÇAS
+    # =============================
+
     cobrancas = (
         db.collection("empresas")
         .document(empresa_id)
@@ -497,30 +534,40 @@ def dashboard_cliente(ctx=Depends(require_empresa_access)):
     faturas = []
 
     for c in cobrancas:
+
         data = c.to_dict()
 
         faturas.append({
             "id": c.id,
             "valor": data.get("valor", 0),
-            "vencimento": data.get("data_vencimento"),
+            "vencimento": data.get("vencimento"),
             "status": data.get("status")
         })
+
+    # =============================
+    # FATURA EM ABERTO
+    # =============================
 
     fatura_aberta = None
 
     for f in faturas:
-        if f["status"] != "pago":
+        if str(f["status"]).lower() != "pago":
             fatura_aberta = f
             break
 
+    # =============================
+    # RETORNO
+    # =============================
+
     return {
-        "status": cliente.get("conexao_status"),
-        "plano": cliente.get("plano_id"),
-        "ip": cliente.get("ip_address"),
-        "velocidade": "100MB",
+        "status": cliente.get("conexao_status", "offline"),
+        "plano": plano_nome,
+        "ip": cliente.get("ip_address", "-"),
+        "velocidade": velocidade,
         "fatura": fatura_aberta,
         "ultimas_faturas": faturas[:5]
     }
+
 
 @router.get("/{cliente_id}")
 def obter_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):

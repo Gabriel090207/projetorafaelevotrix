@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "../styles/internet.css";
 
+import { FiRefreshCw, FiPower } from "react-icons/fi";
+
 interface InternetStatus {
   status: string;
   ip: string;
@@ -9,6 +11,8 @@ interface InternetStatus {
   reconexoes: number;
   download: string;
   upload: string;
+  nas?: string;
+  service?: string;
 }
 
 const InternetCliente = () => {
@@ -18,10 +22,19 @@ const InternetCliente = () => {
 
   useEffect(() => {
     carregarStatus();
+
+    const interval = setInterval(() => {
+      carregarStatus();
+    }, 10000); // atualiza a cada 10s
+
+    return () => clearInterval(interval);
+
   }, []);
 
   async function carregarStatus() {
+
     try {
+
       setLoading(true);
 
       const response = await api.get("/cliente/internet");
@@ -29,13 +42,19 @@ const InternetCliente = () => {
       setDados(response.data);
 
     } catch (error) {
+
       console.error("Erro ao carregar status internet", error);
+
     } finally {
+
       setLoading(false);
+
     }
+
   }
 
   async function reiniciarOnu() {
+
     try {
 
       await api.post("/cliente/reiniciar-onu");
@@ -45,19 +64,32 @@ const InternetCliente = () => {
       carregarStatus();
 
     } catch (error) {
+
       console.error(error);
+
       alert("Erro ao reiniciar ONU");
+
     }
+
   }
 
   return (
+
     <div className="internet-page">
 
-      <h1>Minha Internet</h1>
+      <div className="internet-header">
+        <h1>Minha Internet</h1>
+
+        {loading && (
+          <span className="internet-loading">
+            Atualizando...
+          </span>
+        )}
+      </div>
 
       <div className="internet-card">
 
-        {loading && <small>Atualizando status...</small>}
+        {/* STATUS PRINCIPAL */}
 
         <div className="internet-status">
 
@@ -72,11 +104,12 @@ const InternetCliente = () => {
           </span>
 
           <div className="internet-ip">
-            IP: {dados?.ip || "-"}
+            IP Público: {dados?.ip || "-"}
           </div>
 
         </div>
 
+        {/* GRID DE INFORMAÇÕES */}
 
         <div className="internet-grid">
 
@@ -100,8 +133,19 @@ const InternetCliente = () => {
             <strong>{dados?.upload || "0 MB"}</strong>
           </div>
 
+          <div className="internet-item">
+            <span>NAS</span>
+            <strong>{dados?.nas || "-"}</strong>
+          </div>
+
+          <div className="internet-item">
+            <span>Serviço</span>
+            <strong>{dados?.service || "-"}</strong>
+          </div>
+
         </div>
 
+        {/* BOTÕES */}
 
         <div className="internet-actions">
 
@@ -109,6 +153,7 @@ const InternetCliente = () => {
             className="btn-red"
             onClick={carregarStatus}
           >
+            <FiRefreshCw />
             Atualizar
           </button>
 
@@ -116,6 +161,7 @@ const InternetCliente = () => {
             className="btn-red"
             onClick={reiniciarOnu}
           >
+            <FiPower />
             Reiniciar ONU
           </button>
 

@@ -56,6 +56,7 @@ from app.routers import logs
 from app.routers import clientes_online
 from app.routers import equipamentos
 
+
 # 📦 Produtos
 from app.routers import planos
 
@@ -65,6 +66,10 @@ from app.routers import usuarios
 from app.routers import webhooks
 from app.routers import sync
 from app.routers import gateways
+
+
+# Cliente
+from app.routers import cliente_internet
 
 # =====================================================
 # 🔗 REGISTRO DOS ROUTERS
@@ -112,6 +117,10 @@ app.include_router(usuarios.router)
 app.include_router(webhooks.router)
 app.include_router(sync.router)
 app.include_router(gateways.router)
+
+
+# Cliente
+app.include_router(cliente_internet.router)
 
 # =====================================================
 # 🧪 ROTAS BASE

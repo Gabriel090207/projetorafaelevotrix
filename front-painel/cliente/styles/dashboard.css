@@ -152,3 +152,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ================= GRAFICO ================= */
+
+.dashboard-grafico {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.dashboard-grafico h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.grafico-box {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  border-radius: 10px;
+  color: #6b7280;
+}
