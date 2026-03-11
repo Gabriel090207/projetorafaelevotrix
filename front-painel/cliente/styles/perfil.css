@@ -1,0 +1,64 @@
+.perfil-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* HEADER */
+
+.perfil-page h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* CARD */
+
+.perfil-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* CAMPOS */
+
+.perfil-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perfil-item span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.perfil-item strong {
+  font-size: 15px;
+}
+
+/* BOTÃO */
+
+.btn-red {
+  grid-column: span 2;
+
+  background: #dc2626;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+
+  width: 200px;
+}
+
+.btn-red:hover {
+  background: #b91c1c;
+}

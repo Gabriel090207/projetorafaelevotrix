@@ -22,7 +22,7 @@ def get_current_user(credentials=Depends(security)):
 
 
 # =========================
-# SINCRONIZAR USUÁRIO
+# SINCRONIZAR USUÁRIO ADMIN
 # =========================
 @router.post("/sync-user")
 def sync_user(user=Depends(get_current_user)):
@@ -81,6 +81,7 @@ def sync_user(user=Depends(get_current_user)):
         "perfil": "admin"
     }
 
+
 # =========================
 # PEGAR DADOS DO USUÁRIO LOGADO
 # =========================
@@ -94,6 +95,11 @@ def get_me(user=Depends(get_current_user)):
 
     for empresa in empresas_ref.stream():
 
+        empresa_data = empresa.to_dict()
+
+        # =========================
+        # VERIFICAR USUARIOS (ADMIN / TECNICO)
+        # =========================
         usuarios_ref = (
             empresa.reference
             .collection("usuarios")
@@ -104,7 +110,6 @@ def get_me(user=Depends(get_current_user)):
         for usuario in usuarios_ref:
 
             data = usuario.to_dict()
-            empresa_data = empresa.to_dict()
 
             return {
                 "uid": uid,
@@ -113,6 +118,30 @@ def get_me(user=Depends(get_current_user)):
                 "empresa_id": empresa.id,
                 "empresa_nome": empresa_data.get("nome"),
                 "perfil": data.get("perfil", "usuario")
+            }
+
+        # =========================
+        # VERIFICAR CLIENTES
+        # =========================
+        clientes_ref = (
+            empresa.reference
+            .collection("clientes")
+            .where("email", "==", email)
+            .stream()
+        )
+
+        for cliente in clientes_ref:
+
+            data = cliente.to_dict()
+
+            return {
+                "uid": uid,
+                "cliente_id": cliente.id,
+                "email": email,
+                "nome": data.get("nome"),
+                "empresa_id": empresa.id,
+                "empresa_nome": empresa_data.get("nome"),
+                "perfil": "cliente"
             }
 
     raise HTTPException(status_code=404, detail="Usuário não encontrado")

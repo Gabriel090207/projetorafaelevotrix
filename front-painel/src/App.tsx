@@ -66,7 +66,8 @@ import LayoutCliente from "../cliente/components/LayoutCliente";
 import FaturasCliente from "../cliente/pages/FaturasCliente";
 import InternetCliente from "../cliente/pages/InternetCliente";
 import SuporteCliente from "../cliente/pages/SuporteCliente";
-
+import AtendimentoCliente from "../cliente/pages/AtendimentoCliente";
+import PerfilCliente from "../cliente/pages/PerfilCliente";
 
 function App() {
 
@@ -190,6 +191,24 @@ function App() {
  element={
    <ProtectedCliente>
      <SuporteCliente />
+   </ProtectedCliente>
+ }
+/>
+
+<Route
+ path="/cliente/atendimento"
+ element={
+   <ProtectedCliente>
+     <AtendimentoCliente />
+   </ProtectedCliente>
+ }
+/>
+
+<Route
+ path="/cliente/perfil"
+ element={
+   <ProtectedCliente>
+     <PerfilCliente />
    </ProtectedCliente>
  }
 />

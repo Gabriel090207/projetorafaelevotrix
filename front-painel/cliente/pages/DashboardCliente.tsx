@@ -23,8 +23,7 @@ const DashboardCliente = () => {
 
   async function carregarDados() {
     try {
-      const response = await api.get("/cliente/dashboard");
-
+      const response = await api.get("/clientes/dashboard");
       setStatusInternet(response.data.status || "offline");
       setPlano(response.data.plano || "-");
       setIpPublico(response.data.ip || "-");

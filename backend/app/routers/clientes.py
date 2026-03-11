@@ -13,6 +13,8 @@ import random
 from app.core.firebase import db
 from app.services.sgp_auth import SGPAuth
 
+from firebase_admin import auth
+
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
 
 
@@ -64,6 +66,8 @@ class ClienteCreateManual(BaseModel):
     endereco: Optional[str] = None
     plano_id: Optional[str] = None
 
+    senha_portal: Optional[str] = None
+
     # rede
     pppoe_user: Optional[str] = None
     pppoe_password: Optional[str] = None
@@ -72,6 +76,7 @@ class ClienteCreateManual(BaseModel):
 
     olt_id: Optional[str] = None
     onu_sn: Optional[str] = None
+    onu_id: Optional[str] = None
     porta_olt: Optional[str] = None
     vlan: Optional[int] = None
 
@@ -306,7 +311,6 @@ def run_sync_clientes_sgp_all_job(job_id: str, empresa_id: str, limit: int = 100
         _update_job(job_ref, status="error", message=str(e))
 
 
-
 @router.post("")
 def criar_cliente_manual(
     dados: ClienteCreateManual,
@@ -324,6 +328,21 @@ def criar_cliente_manual(
 
     if doc.exists:
         raise HTTPException(status_code=400, detail="Cliente já existe")
+
+    # =========================
+    # CRIAR USUÁRIO FIREBASE
+    # =========================
+    if dados.email and dados.senha_portal:
+        try:
+            auth.create_user(
+                email=dados.email,
+                password=dados.senha_portal
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Erro ao criar usuário Firebase: {str(e)}"
+            )
 
     novo_cliente = {
         "nome": dados.nome,
@@ -353,6 +372,7 @@ def criar_cliente_manual(
         "latitude": dados.latitude,
         "longitude": dados.longitude,
         "conexao_status": "offline",
+
         "origem": "manual",
         "empresa_id": empresa_id,
         "criado_em": _now()
@@ -495,3 +515,36 @@ def desbloquear_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
     })
 
     return {"ok": True, "status": "liberado"}
+
+
+
+
+@router.get("/perfil")
+def perfil_cliente(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+    cliente_id = ctx["user_id"]   # deve ser o documento (cpf)
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    data = doc.to_dict()
+
+    return {
+        "nome": data.get("nome"),
+        "email": data.get("email"),
+        "telefone": data.get("telefone"),
+        "cpf": data.get("documento"),
+        "endereco": data.get("endereco"),
+        "plano": data.get("plano_id"),
+        "status": data.get("conexao_status")
+    }

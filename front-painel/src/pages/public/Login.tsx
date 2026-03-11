@@ -28,17 +28,21 @@ const Login = () => {
 
       localStorage.setItem("token", token);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
 
       const data = await response.json();
 
       localStorage.setItem("empresa_id", data.empresa_id);
-      localStorage.setItem("perfil", data.perfil);
+localStorage.setItem("perfil", data.perfil);
+
+// salvar cliente
+if (data.cliente_id) {
+  localStorage.setItem("cliente_id", data.cliente_id);
+}
 
       redirecionar(data.perfil);
 
@@ -70,17 +74,24 @@ const Login = () => {
         })
       );
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/sync-user`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
 
       const data = await response.json();
 
-      localStorage.setItem("empresa_id", data.empresa_id);
-      localStorage.setItem("perfil", data.perfil);
+     localStorage.setItem("empresa_id", data.empresa_id);
+localStorage.setItem("perfil", data.perfil);
+localStorage.setItem("uid", data.uid);
+
+localStorage.setItem("cliente_id", data.uid);
+
+// salvar cliente
+if (data.cliente_id) {
+  localStorage.setItem("cliente_id", data.cliente_id);
+}
 
       redirecionar(data.perfil);
 
@@ -96,19 +107,22 @@ const Login = () => {
 
   function redirecionar(perfil: string) {
 
-    if (perfil === "admin") {
-      navigate("/dashboard");
-    }
+  setIsRegister(false);
+  setIsSwitching(false);
 
-    if (perfil === "cliente") {
-      navigate("/cliente/dashboard");
-    }
-
-    if (perfil === "tecnico") {
-      navigate("/tecnico/dashboard");
-    }
-
+  if (perfil === "admin") {
+    navigate("/dashboard");
   }
+
+  if (perfil === "cliente") {
+    navigate("/cliente/dashboard");
+  }
+
+  if (perfil === "tecnico") {
+    navigate("/tecnico/dashboard");
+  }
+
+}
 
   return (
     <div className="login-page">
