@@ -25,9 +25,9 @@ const PerfilCliente = () => {
 
     
 
-      const clienteId = localStorage.getItem("cliente_id");
-const response = await api.get(`/clientes/${clienteId}`);
+   const response = await api.get("/clientes/perfil");
 
+   
       setCliente(response.data);
 
     } catch (error) {

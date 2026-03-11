@@ -430,6 +430,98 @@ def start_sync_clientes_sgp_all_job(
 
 
 
+
+@router.get("/perfil")
+def perfil_cliente(ctx=Depends(require_empresa_access)):
+
+    print("CTX:", ctx)
+
+    empresa_id = ctx["empresa_id"]
+    cliente_id = ctx["user_id"]   # deve ser o documento (cpf)
+
+    ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+    )
+
+    doc = ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    data = doc.to_dict()
+
+    return {
+        "nome": data.get("nome"),
+        "email": data.get("email"),
+        "telefone": data.get("telefone"),
+        "cpf": data.get("documento"),
+        "endereco": data.get("endereco"),
+        "plano": data.get("plano_id"),
+        "status": data.get("conexao_status")
+    }
+
+
+
+@router.get("/dashboard")
+def dashboard_cliente(ctx=Depends(require_empresa_access)):
+
+    empresa_id = ctx["empresa_id"]
+    cliente_id = ctx["user_id"]
+
+    cliente_ref = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("clientes")
+        .document(cliente_id)
+    )
+
+    doc = cliente_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    cliente = doc.to_dict()
+
+    # buscar cobranças
+    cobrancas = (
+        db.collection("empresas")
+        .document(empresa_id)
+        .collection("cobrancas")
+        .where("cliente_id", "==", cliente_id)
+        .stream()
+    )
+
+    faturas = []
+
+    for c in cobrancas:
+        data = c.to_dict()
+
+        faturas.append({
+            "id": c.id,
+            "valor": data.get("valor", 0),
+            "vencimento": data.get("data_vencimento"),
+            "status": data.get("status")
+        })
+
+    fatura_aberta = None
+
+    for f in faturas:
+        if f["status"] != "pago":
+            fatura_aberta = f
+            break
+
+    return {
+        "status": cliente.get("conexao_status"),
+        "plano": cliente.get("plano_id"),
+        "ip": cliente.get("ip_address"),
+        "velocidade": "100MB",
+        "fatura": fatura_aberta,
+        "ultimas_faturas": faturas[:5]
+    }
+
 @router.get("/{cliente_id}")
 def obter_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
     empresa_id = ctx["empresa_id"]
@@ -516,35 +608,3 @@ def desbloquear_cliente(cliente_id: str, ctx=Depends(require_empresa_access)):
 
     return {"ok": True, "status": "liberado"}
 
-
-
-
-@router.get("/perfil")
-def perfil_cliente(ctx=Depends(require_empresa_access)):
-
-    empresa_id = ctx["empresa_id"]
-    cliente_id = ctx["user_id"]   # deve ser o documento (cpf)
-
-    ref = (
-        db.collection("empresas")
-        .document(empresa_id)
-        .collection("clientes")
-        .document(cliente_id)
-    )
-
-    doc = ref.get()
-
-    if not doc.exists:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")
-
-    data = doc.to_dict()
-
-    return {
-        "nome": data.get("nome"),
-        "email": data.get("email"),
-        "telefone": data.get("telefone"),
-        "cpf": data.get("documento"),
-        "endereco": data.get("endereco"),
-        "plano": data.get("plano_id"),
-        "status": data.get("conexao_status")
-    }
