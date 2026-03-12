@@ -1,0 +1,135 @@
+.dashboard-page h1 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.dashboard-top {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+/* CARDS */
+
+.dash-card {
+  background: linear-gradient(135deg, #0f172a, #020617);
+  border-radius: 18px;
+  padding: 18px;
+  color: #e5e7eb;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dash-card-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dash-card-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  background: rgba(255,255,255,0.08);
+}
+
+.dash-card-body {
+  margin-top: 8px;
+}
+
+.dash-card-value {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.dash-card-title {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+/* VARIANTS */
+
+.dash-card.primary {
+  background: linear-gradient(135deg, #0f766e, #042f2e);
+}
+
+.dash-card.success {
+  background: linear-gradient(135deg, #14532d, #052e16);
+}
+
+.dash-card.danger {
+  background: linear-gradient(135deg, #7f1d1d, #450a0a);
+}
+
+.dash-card.warning {
+  background: linear-gradient(135deg, #78350f, #451a03);
+}
+
+/* PANELS */
+
+.dashboard-panels {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.dashboard-panel {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+.dashboard-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-panel-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* VARIANT ICONS */
+
+.dashboard-panel.attention .dashboard-panel-icon {
+  background: rgba(220,38,38,0.08);
+  color: #dc2626;
+}
+
+.dashboard-panel.network .dashboard-panel-icon {
+  background: rgba(15,118,110,0.08);
+  color: #0f766e;
+}
+
+.dashboard-panel.finance .dashboard-panel-icon {
+  background: rgba(217,119,6,0.08);
+  color: #d97706;
+}
+
+.dashboard-panel ul {
+  list-style: none;
+  padding: 0;
+}
+
+.dashboard-panel li {
+  padding: 10px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.dashboard-panel li:last-child {
+  border-bottom: none;
+}

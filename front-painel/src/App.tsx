@@ -69,6 +69,18 @@ import SuporteCliente from "../cliente/pages/SuporteCliente";
 import AtendimentoCliente from "../cliente/pages/AtendimentoCliente";
 import PerfilCliente from "../cliente/pages/PerfilCliente";
 
+
+
+/* ============= TECNICO ======================= */
+import LayoutTecnico from "../tecnico/components/LayoutTecnico";
+import DashboardTecnico from "../tecnico/pages/DashboardTecnico";
+import OrdensTecnico from "../tecnico/pages/OrdensTecnico";
+import MapaTecnico from "../tecnico/pages/MapaTecnico";
+import ClientesTecnico from "../tecnico/pages/ClientesTecnico";
+import EquipamentosTecnico from "../tecnico/pages/EquipamentosTecnico";
+import ChatTecnico from "../tecnico/pages/ChatTecnico";
+import PerfilTecnico from "../tecnico/pages/PerfilTecnico";
+
 function App() {
 
   const Protected = ({ children }: { children: React.ReactNode }) => (
@@ -81,6 +93,12 @@ function App() {
   const ProtectedCliente = ({ children }: { children: React.ReactNode }) => (
   <PrivateRoute>
     <LayoutCliente>{children}</LayoutCliente>
+  </PrivateRoute>
+);
+
+const ProtectedTecnico = ({ children }: { children: React.ReactNode }) => (
+  <PrivateRoute>
+    <LayoutTecnico>{children}</LayoutTecnico>
   </PrivateRoute>
 );
 
@@ -212,6 +230,73 @@ function App() {
    </ProtectedCliente>
  }
 />
+
+
+
+/* ============= TECNICO ======================= */
+<Route
+  path="/tecnico/dashboard"
+  element={
+    <ProtectedTecnico>
+      <DashboardTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/ordens"
+  element={
+    <ProtectedTecnico>
+      <OrdensTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/mapa"
+  element={
+    <ProtectedTecnico>
+      <MapaTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/clientes"
+  element={
+    <ProtectedTecnico>
+      <ClientesTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/equipamentos"
+  element={
+    <ProtectedTecnico>
+      <EquipamentosTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/chat"
+  element={
+    <ProtectedTecnico>
+      <ChatTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
+<Route
+  path="/tecnico/perfil"
+  element={
+    <ProtectedTecnico>
+      <PerfilTecnico />
+    </ProtectedTecnico>
+  }
+/>
+
     </Routes>
   );
 }

@@ -1,0 +1,92 @@
+.tecnico-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.tecnico-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  background: #b91c1c;
+  color: white;
+  padding: 24px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.25);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.tecnico-sidebar-logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 22px;
+}
+
+.tecnico-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tecnico-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 12px 14px;
+  border-radius: 10px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.tecnico-sidebar-link:hover,
+.tecnico-sidebar-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateX(2px);
+  text-decoration: none;
+}
+
+.tecnico-sidebar-link svg {
+  font-size: 20px;
+}
+
+.tecnico-app-content {
+  margin-left: 220px;
+  flex: 1;
+  min-height: 100vh;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+}
+
+.tecnico-page-content {
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .tecnico-sidebar {
+    width: 88px;
+    padding: 20px 12px;
+  }
+
+  .tecnico-sidebar-logo {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .tecnico-sidebar-link span {
+    display: none;
+  }
+
+  .tecnico-sidebar-link {
+    justify-content: center;
+  }
+
+  .tecnico-app-content {
+    margin-left: 88px;
+  }
+}
