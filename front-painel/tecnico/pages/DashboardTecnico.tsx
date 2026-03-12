@@ -21,7 +21,24 @@ const DashboardTecnico = () => {
 
       <h1>Dashboard Técnico</h1>
 
+
+      
+
       <div className="dashboard-top">
+
+        
+        <div className="dash-card primary">
+          <div className="dash-card-header">
+            <div className="dash-card-icon">
+              <FaTools />
+            </div>
+          </div>
+
+          <div className="dash-card-body">
+            <div className="dash-card-value">{ordensAndamento}</div>
+            <div className="dash-card-title">Em Atendimento</div>
+          </div>
+        </div>
 
         <div className="dash-card warning">
           <div className="dash-card-header">
@@ -36,18 +53,6 @@ const DashboardTecnico = () => {
           </div>
         </div>
 
-        <div className="dash-card primary">
-          <div className="dash-card-header">
-            <div className="dash-card-icon">
-              <FaTools />
-            </div>
-          </div>
-
-          <div className="dash-card-body">
-            <div className="dash-card-value">{ordensAndamento}</div>
-            <div className="dash-card-title">Em Atendimento</div>
-          </div>
-        </div>
 
         <div className="dash-card danger">
           <div className="dash-card-header">
